@@ -10,10 +10,7 @@ class BorrowRequest extends Model
 
     protected $fillable = [
         'book_id',
-        'borrower_name',
-        'full_name',
-        'phone',
-        'email',
+        'user_id',
         'message',
         'borrow_date',
         'return_date',
@@ -30,6 +27,11 @@ class BorrowRequest extends Model
     public function book()
     {
         return $this->belongsTo(Book::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
     /** Human-readable request status */
@@ -57,7 +59,7 @@ class BorrowRequest extends Model
     /** Short description for chat sidebar preview */
     public function getPreviewAttribute(): string
     {
-        $name = $this->borrower_name ?? $this->full_name;
+        $name = $this->user ? $this->user->name : 'Seseorang';
         return "{$name} ingin meminjam '{$this->book?->title}'";
     }
 }

@@ -17,13 +17,17 @@ class Book extends Model
         'cover',
         'category',
         'description',
-        'owner_name',
-        'owner_avatar',
+        'user_id',
         'location',
         'rating',
         'borrow_count',
         'book_status',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function borrowRequests()
     {
@@ -33,6 +37,16 @@ class Book extends Model
     public function activeBorrowRequest()
     {
         return $this->hasOne(BorrowRequest::class)->where('status', 'approved')->latest();
+    }
+
+    public function getOwnerNameAttribute(): string
+    {
+        return $this->user ? $this->user->name : 'Anonymous';
+    }
+
+    public function getOwnerAvatarAttribute(): string
+    {
+        return $this->user && $this->user->avatar ? asset('images/' . $this->user->avatar) : asset('images/avatar_user.png');
     }
 
     /** Full URL to the cover image. */

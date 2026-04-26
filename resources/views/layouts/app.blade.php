@@ -81,7 +81,7 @@
 
             <div class="spacer"></div>
 
-            <a href="{{ route('profile') }}" class="nav-row {{ request()->routeIs('profile') ? 'active' : '' }}" style="text-decoration:none;">
+            <a href="{{ route('settings') }}" class="nav-row {{ request()->routeIs('settings') ? 'active' : '' }}" style="text-decoration:none;">
                 <div class="nav-item" title="Pengaturan">
                     <img src="{{ asset('images/icon_settings.png') }}" alt="Settings" style="width:22px;height:22px;object-fit:contain;">
                 </div>
@@ -102,5 +102,39 @@
         </main>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const sidebarToggle = document.getElementById('sidebar-toggle');
+  const borrowToggle = document.getElementById('borrow-submenu-toggle');
+
+  // Auto-expand sidebar ketika dropdown Book diklik
+  if (borrowToggle && sidebarToggle) {
+    borrowToggle.addEventListener('change', function() {
+      if (this.checked && !sidebarToggle.checked) {
+        sidebarToggle.checked = true;
+      }
+    });
+  }
+
+  // Auto-expand sidebar ketika user klik internal book link
+  document.querySelectorAll('a[href*="/books/"]').forEach(link => {
+    link.addEventListener('click', function(e) {
+      const isBookLink = this.classList.contains('book-link') || 
+                        this.closest('.book-card') ||
+                        this.closest('.book-grid');
+      
+      if (isBookLink) {
+        if (sidebarToggle && !sidebarToggle.checked) {
+          sidebarToggle.checked = true;
+          if (window.innerWidth < 768) {
+            setTimeout(() => { sidebarToggle.checked = false; }, 2000);
+          }
+        }
+      }
+    });
+  });
+});
+</script>
 </body>
 </html>

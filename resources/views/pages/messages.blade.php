@@ -230,15 +230,26 @@
         <div class="inbox-list">
             @forelse($requests as $req)
             @php
-                $isActive  = isset($activeRequest) && $activeRequest->email === $req->email;
-                $isUnread  = !$req->read_by_owner;
-                $initials  = strtoupper(substr($req->borrower_name ?? $req->full_name, 0, 1));
+                $myId = auth()->id();
+                $isOwner = $req->book->user_id === $myId;
+                $partnerName = $isOwner ? ($req->borrower_name ?? $req->full_name ?? 'Anonim') : $req->book->owner_name;
+                $partnerEmail = $isOwner ? $req->email : ($req->book->user->email ?? 'unknown');
+                
+                $isActive  = isset($activeRequest) && (
+                    $isOwner ? ($activeRequest->email === $req->email) : (($activeRequest->book->user->email ?? '') === $partnerEmail)
+                );
+                
+                $isUnread  = $isOwner && !$req->read_by_owner;
+                $initials  = strtoupper(substr($partnerName, 0, 1));
             @endphp
-            <a href="{{ route('messages.show', urlencode($req->email)) }}"
+            <a href="{{ route('messages.show', urlencode($partnerEmail)) }}"
                class="inbox-thread {{ $isActive ? 'active' : '' }} {{ $isUnread && !$isActive ? 'unread' : '' }}">
                 <div class="inbox-avatar">{{ $initials }}</div>
                 <div class="inbox-thread-info">
-                    <div class="inbox-thread-name">{{ $req->borrower_name ?? $req->full_name }}</div>
+                    <div class="inbox-thread-name">
+                        {{ $partnerName }}
+                        @if(!$isOwner) <span style="font-size:10px;background:var(--gray-light);padding:2px 6px;border-radius:4px;color:var(--gray);margin-left:4px;">Pemilik</span> @endif
+                    </div>
                     <div class="inbox-thread-preview">{{ $req->book?->title ?? 'Buku tidak ditemukan' }}</div>
                 </div>
                 <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
@@ -267,9 +278,17 @@
 
         @if(isset($activeRequest) && $activeRequest)
         @php
-            $req       = $activeRequest;
-            $initials  = strtoupper(substr($req->borrower_name ?? $req->full_name, 0, 1));
-            $book      = $req->book;
+            $req      = $activeRequest;
+            $myId     = auth()->id();
+            $isOwner  = $req->book->user_id === $myId;
+            
+            $borrower = $req->borrower_name ?? $req->full_name ?? 'Anonim';
+            $partnerName  = $isOwner ? $borrower : $req->book->owner_name;
+            $partnerEmail = $isOwner ? $req->email : ($req->book->user->email ?? '');
+            $partnerPhone = $isOwner ? $req->phone : '-';
+            
+            $initials = strtoupper(substr($partnerName, 0, 1));
+            $book     = $req->book;
         @endphp
 
         {{-- Header --}}
@@ -277,8 +296,11 @@
             <div style="display:flex;align-items:center;gap:12px;">
                 <div class="inbox-avatar" style="width:40px;height:40px;font-size:14px;">{{ $initials }}</div>
                 <div>
-                    <div class="inbox-detail-title">{{ $req->borrower_name ?? $req->full_name }}</div>
-                    <div class="inbox-detail-sub">{{ $req->email }} • {{ $req->phone }}</div>
+                    <div class="inbox-detail-title">
+                        {{ $partnerName }}
+                        @if(!$isOwner) <span style="font-size:10px;background:var(--gray-light);padding:2px 6px;border-radius:4px;color:var(--gray);margin-left:4px;">Pemilik Buku</span> @endif
+                    </div>
+                    <div class="inbox-detail-sub">{{ $partnerEmail }}</div>
                 </div>
             </div>
             <div>
@@ -301,10 +323,10 @@
             <div class="req-card">
                 {{-- Borrower info --}}
                 <div class="req-card-header">
-                    <div class="req-borrower-av">{{ $initials }}</div>
+                    <div class="req-borrower-av" style="font-size:12px;width:32px;height:32px;">{{ strtoupper(substr($borrower, 0, 1)) }}</div>
                     <div>
-                        <div class="req-borrower-name">{{ $req->borrower_name ?? $req->full_name }}</div>
-                        <div class="req-borrower-sub">{{ $req->email }} • {{ $req->phone }}</div>
+                        <div class="req-borrower-name">{{ $borrower }}</div>
+                        <div class="req-borrower-sub">Peminjam &bull; {{ $req->email }}</div>
                     </div>
                 </div>
 
@@ -351,71 +373,94 @@
                 @endif
 
                 {{-- Action buttons --}}
-                @if($req->status === 'pending')
-                <div class="req-actions">
-                    <form action="{{ route('borrow.approve', $req->id) }}" method="POST" style="flex:1;">
-                        @csrf @method('PATCH')
-                        <button type="submit" class="btn-approve" style="width:100%;">Setujui</button>
-                    </form>
-                    <form action="{{ route('borrow.reject', $req->id) }}" method="POST" style="flex:1;">
-                        @csrf @method('PATCH')
-                        <button type="submit" class="btn-reject" style="width:100%;">Tolak</button>
-                    </form>
-                </div>
-                @elseif($req->status === 'approved')
-                <div class="req-actions">
-                    <form action="{{ route('borrow.returned', $req->id) }}" method="POST" style="flex:1;">
-                        @csrf @method('PATCH')
-                        <button type="submit" class="btn-returned" style="width:100%;">Tandai Sudah Dikembalikan</button>
-                    </form>
-                </div>
-                <p style="font-size:12px;color:var(--gray);text-align:center;margin-top:10px;">
-                    Tekan tombol ini setelah buku diterima kembali
-                </p>
-                @elseif($req->status === 'rejected')
-                <p style="font-size:13px;color:var(--gray);text-align:center;padding:12px;background:var(--gray-light);border-radius:10px;">
-                    Permintaan ini sudah ditolak
-                </p>
-                @elseif($req->status === 'returned')
-                <p style="font-size:13px;color:#065F46;text-align:center;padding:12px;background:#D1FAE5;border-radius:10px;">
-                    Buku sudah dikembalikan. Terima kasih!
-                </p>
+                @if($isOwner)
+                    @if($req->status === 'pending')
+                    <div class="req-actions">
+                        <form action="{{ route('borrow.approve', $req->id) }}" method="POST" style="flex:1;">
+                            @csrf @method('PATCH')
+                            <button type="submit" class="btn-approve" style="width:100%;">Setujui</button>
+                        </form>
+                        <form action="{{ route('borrow.reject', $req->id) }}" method="POST" style="flex:1;">
+                            @csrf @method('PATCH')
+                            <button type="submit" class="btn-reject" style="width:100%;">Tolak</button>
+                        </form>
+                    </div>
+                    @elseif($req->status === 'approved')
+                    <div class="req-actions">
+                        <form action="{{ route('borrow.returned', $req->id) }}" method="POST" style="flex:1;">
+                            @csrf @method('PATCH')
+                            <button type="submit" class="btn-returned" style="width:100%;">Tandai Sudah Dikembalikan</button>
+                        </form>
+                    </div>
+                    <p style="font-size:12px;color:var(--gray);text-align:center;margin-top:10px;">
+                        Tekan tombol ini setelah buku diterima kembali
+                    </p>
+                    @elseif($req->status === 'rejected')
+                    <p style="font-size:13px;color:var(--gray);text-align:center;padding:12px;background:var(--gray-light);border-radius:10px;">
+                        Permintaan ini sudah ditolak
+                    </p>
+                    @elseif($req->status === 'returned')
+                    <p style="font-size:13px;color:#065F46;text-align:center;padding:12px;background:#D1FAE5;border-radius:10px;">
+                        Buku sudah dikembalikan. Terima kasih!
+                    </p>
+                    @endif
+                @else
+                    {{-- Actions seen by Borrower --}}
+                    @if($req->status === 'pending')
+                    <p style="font-size:13px;color:var(--yellow);text-align:center;padding:12px;background:#FEF3C7;border-radius:10px;">
+                        Pemilik sedang mempertimbangkan permintaanmu
+                    </p>
+                    @elseif($req->status === 'approved')
+                    <p style="font-size:13px;color:var(--blue);text-align:center;padding:12px;background:var(--blue-light);border-radius:10px;font-weight:600;">
+                        Permintaan disetujui! Silakan hubungi pemilik
+                    </p>
+                    @elseif($req->status === 'rejected')
+                    <p style="font-size:13px;color:var(--gray);text-align:center;padding:12px;background:var(--gray-light);border-radius:10px;">
+                        Maaf, pemilik menolak permintaan ini
+                    </p>
+                    @elseif($req->status === 'returned')
+                    <p style="font-size:13px;color:#065F46;text-align:center;padding:12px;background:#D1FAE5;border-radius:10px;">
+                        Buku telah sukses kamu kembalikan!
+                    </p>
+                    @endif
                 @endif
             </div>
 
             {{-- Simulated chat bubbles for context --}}
-            <div class="chat-bubble-row">
-                <div class="inbox-avatar" style="width:32px;height:32px;font-size:12px;flex-shrink:0;">{{ $initials }}</div>
+            <div class="chat-bubble-row {{ !$isOwner ? 'self' : '' }}">
+                @if($isOwner)<div class="inbox-avatar" style="width:32px;height:32px;font-size:12px;flex-shrink:0;">{{ strtoupper(substr($borrower, 0, 1)) }}</div>@endif
                 <div>
-                    <div class="chat-bubble recv">
+                    <div class="chat-bubble {{ !$isOwner ? 'sent' : 'recv' }}">
                         Halo! Saya tertarik meminjam buku "{{ $book?->title }}". Apakah masih tersedia?
                     </div>
-                    <div class="chat-time">{{ $req->created_at->format('H:i') }}</div>
+                    <div class="chat-time {{ !$isOwner ? 'r' : '' }}">{{ $req->created_at->format('H:i') }}</div>
                 </div>
             </div>
 
             @if($req->message)
-            <div class="chat-bubble-row">
-                <div class="inbox-avatar" style="width:32px;height:32px;font-size:12px;flex-shrink:0;">{{ $initials }}</div>
+            <div class="chat-bubble-row {{ !$isOwner ? 'self' : '' }}">
+                @if($isOwner)<div class="inbox-avatar" style="width:32px;height:32px;font-size:12px;flex-shrink:0;">{{ strtoupper(substr($borrower, 0, 1)) }}</div>@endif
                 <div>
-                    <div class="chat-bubble recv">{{ $req->message }}</div>
-                    <div class="chat-time">{{ $req->created_at->addSeconds(30)->format('H:i') }}</div>
+                    <div class="chat-bubble {{ !$isOwner ? 'sent' : 'recv' }}">{{ $req->message }}</div>
+                    <div class="chat-time {{ !$isOwner ? 'r' : '' }}">{{ $req->created_at->addSeconds(30)->format('H:i') }}</div>
                 </div>
             </div>
             @endif
 
             @if($req->status === 'approved')
-            <div class="chat-bubble-row self">
+            <div class="chat-bubble-row {{ $isOwner ? 'self' : '' }}">
+                @if(!$isOwner)<div class="inbox-avatar" style="width:32px;height:32px;font-size:12px;flex-shrink:0;">{{ strtoupper(substr($req->book->owner_name, 0, 1)) }}</div>@endif
                 <div>
-                    <div class="chat-bubble sent">Halo! Permintaanmu sudah saya setujui. Kita bisa COD di lokasi yang kamu sebutkan ya! 📚</div>
-                    <div class="chat-time r">{{ $req->updated_at->format('H:i') }}</div>
+                    <div class="chat-bubble {{ $isOwner ? 'sent' : 'recv' }}">Halo! Permintaanmu sudah saya setujui. Kita bisa COD di lokasi yang kamu sebutkan ya! 📚</div>
+                    <div class="chat-time {{ $isOwner ? 'r' : '' }}">{{ $req->updated_at->format('H:i') }}</div>
                 </div>
             </div>
             @elseif($req->status === 'rejected')
-            <div class="chat-bubble-row self">
+            <div class="chat-bubble-row {{ $isOwner ? 'self' : '' }}">
+                @if(!$isOwner)<div class="inbox-avatar" style="width:32px;height:32px;font-size:12px;flex-shrink:0;">{{ strtoupper(substr($req->book->owner_name, 0, 1)) }}</div>@endif
                 <div>
-                    <div class="chat-bubble sent" style="background:#EF4444;">Maaf, permintaan peminjaman ini tidak bisa saya setujui saat ini.</div>
-                    <div class="chat-time r">{{ $req->updated_at->format('H:i') }}</div>
+                    <div class="chat-bubble {{ $isOwner ? 'sent' : 'recv' }}" style="background:#EF4444;">Maaf, permintaan peminjaman ini tidak bisa saya setujui saat ini.</div>
+                    <div class="chat-time {{ $isOwner ? 'r' : '' }}">{{ $req->updated_at->format('H:i') }}</div>
                 </div>
             </div>
             @endif

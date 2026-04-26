@@ -7,14 +7,14 @@
   <div class="profile-hero">
     <div class="profile-bg">PROFILE</div>
     <div class="profile-avatar">
-      <img src="{{ asset('images/avatar_user.png') }}" alt="User" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">
+      <img src="{{ asset('images/' . ($user->avatar ?? 'avatar_user.png')) }}" alt="User" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.background='linear-gradient(135deg,#6366f1,#8b5cf6)';this.removeAttribute('src')">
     </div>
     <div class="profile-info">
-      <h2>{{ $user['name'] }} <span class="verified-badge">&#10004; VERIFIED</span></h2>
-      <div class="level">{{ $user['level'] }}</div>
-      <div class="bio">{{ $user['bio'] }}</div>
+      <h2>{{ $user->name }} <span class="verified-badge">&#10004; VERIFIED</span></h2>
+      <div class="level">{{ $user->level }}</div>
+      <div class="bio">{{ $user->bio }}</div>
       <div class="profile-actions">
-        <a href="{{ route('profile.edit') }}" class="btn btn-primary">Edit Profile</a>
+        <a href="{{ route('profile.edit') }}" class="btn btn-primary">⚙️ Settings</a>
         <button class="btn btn-outline">Share</button>
       </div>
     </div>
@@ -25,7 +25,7 @@
     <div class="stat-card">
       <div>
         <label>BOOKS LISTED</label>
-        <div class="value">{{ $user['books_listed'] }}</div>
+        <div class="value">{{ $user->books_listed }}</div>
       </div>
       <div class="stat-icon">
         <img src="{{ asset('images/icon_books_listed.png') }}" alt="Books Listed" style="width:22px;height:22px;object-fit:contain;" onerror="this.outerHTML='&#128203;'">
@@ -34,7 +34,7 @@
     <div class="stat-card">
       <div>
         <label>EXCHANGES</label>
-        <div class="value">{{ $user['exchanges'] }}</div>
+        <div class="value">{{ $user->exchanges }}</div>
       </div>
       <div class="stat-icon" style="color:var(--green)">
         <img src="{{ asset('images/icon_exchange.png') }}" alt="Exchanges" style="width:22px;height:22px;object-fit:contain;" onerror="this.outerHTML='&#128260;'">
@@ -43,7 +43,7 @@
     <div class="stat-card">
       <div>
         <label>RATING</label>
-        <div class="value">{{ $user['rating'] }}</div>
+        <div class="value">{{ $user->rating }}</div>
       </div>
       <div class="stat-icon" style="color:var(--yellow)">
         <img src="{{ asset('images/icon_star.png') }}" alt="Rating" style="width:22px;height:22px;object-fit:contain;" onerror="this.outerHTML='&#11088;'">

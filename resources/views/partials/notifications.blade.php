@@ -1,5 +1,10 @@
 @php
     $notifRequests = \App\Models\BorrowRequest::with('book')
+        ->whereHas('book', function ($q) {
+            if (auth()->check()) {
+                $q->where('user_id', auth()->id());
+            }
+        })
         ->orderByDesc('created_at')
         ->limit(5)
         ->get();
@@ -17,15 +22,13 @@
    class="notif-item {{ !$req->read_by_owner ? 'unread' : '' }}"
    style="text-decoration:none; color:inherit;">
     <div class="notif-av">
-        <span style="font-size:16px; font-weight:700; color:white;">
-            {{ strtoupper(substr($req->borrower_name ?? $req->full_name, 0, 1)) }}
+        <span style="font-size:15px; font-weight:700; color:white; line-height:1;">
+            {{ strtoupper(substr($req->borrower_name ?? $req->full_name ?? '?', 0, 1)) }}
         </span>
     </div>
     <div class="notif-content">
-        <div class="notif-name">{{ $req->borrower_name ?? $req->full_name }}</div>
-        <div class="notif-text">
-            Ingin meminjam buku milikmu
-        </div>
+        <div class="notif-name">{{ $req->borrower_name ?? $req->full_name ?? 'Anonim' }}</div>
+        <div class="notif-text">Ingin meminjam buku milikmu</div>
         @if($req->book)
         <div class="notif-book">
             <img src="{{ $req->book->cover_url }}" class="notif-book-thumb"

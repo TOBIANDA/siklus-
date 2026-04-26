@@ -3,52 +3,73 @@
 namespace App\Http\Controllers;
 
 use App\Models\BorrowRequest;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class MessagesController extends Controller
 {
     /**
-     * Show the messages/inbox page.
-     * The "conversations" are each unique borrower who has sent a request.
+     * Build the base query: requests where I am either the book owner OR the borrower.
      */
+    private function baseQuery()
+    {
+        $userId = Auth::id();
+        $userEmail = Auth::user()->email;
+
+        return BorrowRequest::with(['book.user'])
+            ->where(function ($query) use ($userId, $userEmail) {
+                // Incoming: My books being requested
+                $query->whereHas('book', fn($q) => $q->where('user_id', $userId))
+                      // Outgoing: Books I am requesting
+                      ->orWhere('email', $userEmail);
+            })
+            ->orderByDesc('created_at');
+    }
+
+    /**
+     * Identify the email of the "other person" in the thread.
+     */
+    private function getThreadKey($req, $myUserId) {
+        return $req->book->user_id === $myUserId ? $req->email : ($req->book->user->email ?? 'unknown');
+    }
+
     public function index()
     {
-        // Group requests by borrower email so each person = 1 thread
-        $requests = BorrowRequest::with('book')
-            ->orderByDesc('created_at')
-            ->get()
-            ->unique('email');   // one thread per borrower email
+        $userId = Auth::id();
+        $allRequests = $this->baseQuery()->get();
+
+        // Group into unique threads by the other person's email
+        $requests = $allRequests->unique(function ($req) use ($userId) {
+            return $this->getThreadKey($req, $userId);
+        })->values();
 
         $activeRequest = $requests->first();
 
-        // Mark as read when opened
-        if ($activeRequest) {
-            BorrowRequest::where('email', $activeRequest->email)
-                ->update(['read_by_owner' => true]);
+        // If I'm the owner, mark latest incoming message as read
+        if ($activeRequest && $activeRequest->book->user_id === $userId && !$activeRequest->read_by_owner) {
+            $activeRequest->update(['read_by_owner' => true]);
         }
 
         return view('pages.messages', compact('requests', 'activeRequest'));
     }
 
-    /**
-     * Open a specific conversation thread by borrower email.
-     */
     public function show(string $email)
     {
-        $requests = BorrowRequest::with('book')
-            ->orderByDesc('created_at')
-            ->get()
-            ->unique('email');
+        $userId = Auth::id();
+        $email = urldecode($email);
 
-        $activeRequest = BorrowRequest::with('book')
-            ->where('email', $email)
-            ->latest()
-            ->first();
+        $allRequests = $this->baseQuery()->get();
 
-        // Mark thread as read
-        if ($activeRequest) {
-            BorrowRequest::where('email', $email)
-                ->update(['read_by_owner' => true]);
+        $requests = $allRequests->unique(function ($req) use ($userId) {
+            return $this->getThreadKey($req, $userId);
+        })->values();
+
+        // The active request for this thread contact email
+        $activeRequest = $allRequests->first(function ($req) use ($userId, $email) {
+            return $this->getThreadKey($req, $userId) === $email;
+        });
+
+        if ($activeRequest && $activeRequest->book->user_id === $userId && !$activeRequest->read_by_owner) {
+            $activeRequest->update(['read_by_owner' => true]);
         }
 
         return view('pages.messages', compact('requests', 'activeRequest'));

@@ -44,7 +44,7 @@
 .avatar-pencil {
   position: absolute;
   bottom: 6px;
-  right: -10px;          /* keluar dari lingkaran foto */
+  right: -10px;
   width: 34px;
   height: 34px;
   background: var(--blue);
@@ -81,9 +81,34 @@
   margin-bottom: 6px;
   text-transform: uppercase;
 }
+
+.alert {
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+.alert-success {
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  color: #155724;
+}
+.alert-error {
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+}
 </style>
 
 <div style="padding:24px;">
+
+  {{-- SUCCESS/ERROR ALERTS --}}
+  @if(session('success'))
+    <div class="alert alert-success">{{ session('success') }}</div>
+  @endif
+  @if(session('error'))
+    <div class="alert alert-error">{{ session('error') }}</div>
+  @endif
 
   <!-- PROFILE HERO -->
   <div class="profile-hero">
@@ -92,11 +117,22 @@
     <!-- Avatar + tombol pensil -->
     <div class="avatar-wrap">
       <div class="profile-avatar">
-        <img src="{{ asset('images/avatar_user.png') }}" alt="User"
-             style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">
+        <img src="{{ asset('storage/profile/' . ($profile['avatar'] ?? 'avatar_user.png')) }}" alt="User"
+             style="width:100%;height:100%;object-fit:cover;" onerror="this.src='{{ asset('images/avatar_user.png') }}'">
       </div>
       <a href="#modal-upload" class="avatar-pencil" title="Ganti Foto">&#9998;</a>
     </div>
+
+    <div class="profile-info">
+      <h2>{{ $profile['name'] ?? 'User' }} <span class="verified-badge">{{ ($profile['verified'] ?? true) ? '✓ VERIFIED' : '' }}</span></h2>
+      <div class="level">{{ $profile['level'] ?? 'Academic Level 4' }}</div>
+      <div class="bio">{{ $profile['bio'] ?? 'Tidak ada deskripsi' }}</div>
+      <div class="profile-actions">
+        <a href="#modal-edit" class="btn btn-primary" style="text-decoration:none;">Edit Profile</a>
+        <button class="btn btn-outline">Share</button>
+      </div>
+    </div>
+  </div>
 
     <div class="profile-info">
       <h2>Bro <span class="verified-badge">&#10004; VERIFIED</span></h2>
@@ -145,7 +181,7 @@
     <div class="book-grid">
       @foreach(range(1,4) as $i)
       <div class="book-card">
-        <a href="{{ route('book.show', $i) }}" style="text-decoration:none;color:inherit;">
+        <a href="{{ route('book.show', $i) }}" class="book-link" style="text-decoration:none;color:inherit;">
           <img src="{{ asset('images/cover_art_of_loving.webp') }}" class="cover" alt=""
                onerror="this.style.background='linear-gradient(135deg,#1a1a1a,#444)';this.removeAttribute('src')">
           <div class="card-body">
@@ -220,17 +256,17 @@
 
       <div>
         <label class="form-label">Full Name</label>
-        <input type="text" name="name" class="form-input" value="Adidharma Dewabrata Kusumaputra">
+        <input type="text" name="name" class="form-input" value="{{ $profile['name'] ?? 'Adidharma Dewabrata Kusumaputra' }}" required>
       </div>
 
       <div>
         <label class="form-label">Occupation</label>
-        <input type="text" name="occupation" class="form-input" value="Undergraduate Student at FILKOM UB">
+        <input type="text" name="occupation" class="form-input" value="{{ $profile['occupation'] ?? 'Undergraduate Student at FILKOM UB' }}">
       </div>
 
       <div>
-        <label class="form-label">Bio</label>
-        <textarea name="bio" rows="4" class="form-input" style="resize:none;">Passionate archivist of Indonesian literature and political philosophy. Sharing rare editions to foster intellectual growth within the Siklus community.</textarea>
+        <label class="form-label">Bio / Deskripsi</label>
+        <textarea name="bio" rows="4" class="form-input" style="resize:none;">{{ $profile['bio'] ?? 'Passionate archivist of Indonesian literature and political philosophy. Sharing rare editions to foster intellectual growth within the Siklus community.' }}</textarea>
       </div>
 
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px;">

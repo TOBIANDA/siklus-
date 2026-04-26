@@ -22,7 +22,26 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'province',
+        'city',
+        'bio',
+        'occupation',
+        'level',
+        'avatar',
+        'books_listed',
+        'exchanges',
+        'rating',
     ];
+
+    public function books()
+    {
+        return $this->hasMany(Book::class);
+    }
+
+    public function borrowRequests()
+    {
+        return $this->hasMany(BorrowRequest::class);
+    }
 
     /**
      * The attributes that should be hidden for serialization.

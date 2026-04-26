@@ -14,19 +14,19 @@
   <div class="borrow-stats">
     <div class="borrow-stat">
       <div class="si"><img src="{{ asset('images/icon_closed_book.png') }}" alt="" style="width:28px;height:28px;object-fit:contain;"></div>
-      <div class="sl">8 Books Read</div>
+      <div class="sl">{{ $stats['books_read'] }} Books Read</div>
     </div>
     <div class="borrow-stat">
       <div class="si"><img src="{{ asset('images/icon_books_open.png') }}" alt="" style="width:28px;height:28px;object-fit:contain;"></div>
-      <div class="sl">3 On Read</div>
+      <div class="sl">{{ $stats['on_read'] }} On Read</div>
     </div>
     <div class="borrow-stat">
       <div class="si"><img src="{{ asset('images/icon_clipboard.png') }}" alt="" style="width:28px;height:28px;object-fit:contain;"></div>
-      <div class="sl">5 Pending</div>
+      <div class="sl">{{ $stats['pending'] }} Pending</div>
     </div>
     <div class="borrow-stat">
       <div class="si"><img src="{{ asset('images/icon_star.png') }}" alt="" style="width:28px;height:28px;object-fit:contain;"></div>
-      <div class="sl">4.8 / 5.0 Rating</div>
+      <div class="sl">{{ number_format($stats['trust_score'], 1) }} / 5.0 Rating</div>
     </div>
   </div>
 

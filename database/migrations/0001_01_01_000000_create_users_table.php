@@ -17,6 +17,15 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('province')->nullable();
+            $table->string('city')->nullable();
+            $table->text('bio')->nullable();
+            $table->string('occupation')->nullable();
+            $table->string('level')->default('Newbie');
+            $table->string('avatar')->nullable();
+            $table->integer('books_listed')->default(0);
+            $table->integer('exchanges')->default(0);
+            $table->decimal('rating', 3, 1)->default(0.0);
             $table->rememberToken();
             $table->timestamps();
         });

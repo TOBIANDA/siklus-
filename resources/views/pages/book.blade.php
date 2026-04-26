@@ -191,9 +191,7 @@
 </div>
 
 
-{{-- ========================================================================
-     MODAL BORROW — dengan tanggal pinjam & kembali
-======================================================================== --}}
+
 <div id="modal-borrow" class="modal-overlay">
   {{-- Backdrop --}}
   <a href="#" style="position:absolute;inset:0;z-index:0;display:block;"></a>

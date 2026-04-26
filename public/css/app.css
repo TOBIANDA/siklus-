@@ -206,6 +206,32 @@ body{font-family:'DM Sans',sans-serif;background:#F9FAFB;color:var(--dark);min-h
 .lc-loc{font-size:12px;color:var(--gray);}
 .borrow-btn{width:100%;background:var(--blue);color:var(--white);border:none;border-radius:8px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:block;text-align:center;text-decoration:none;}
 .borrow-btn:hover{background:var(--blue-dark);}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .borrow-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .borrow-stats {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 16px;
+    gap: 8px;
+  }
+  .borrow-stat {
+    padding: 16px 12px;
+  }
+  .borrow-card {
+    min-width: 240px;
+  }
+  .bsection-title {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+}
+
 /* =========================================
    CSS-ONLY INTERACTIVITY (MESIN PENGGANTI JS)
 ========================================= */

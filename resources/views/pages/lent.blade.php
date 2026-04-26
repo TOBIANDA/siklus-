@@ -149,83 +149,101 @@
     {{-- STATS STRIP --}}
     <div class="borrow-stats" style="margin-bottom:28px;">
         <div class="borrow-stat">
-            <div class="sl" style="font-size:26px; font-weight:900;">{{ $books->count() }}</div>
-            <div style="font-size:11px; font-weight:700; color:var(--blue); text-transform:uppercase;">Total Buku</div>
+            <div class="si"><img src="{{ asset('images/icon_closed_book.png') }}" alt="" style="width:28px;height:28px;object-fit:contain;"></div>
+            <div class="sl">{{ $stats['books_loaned'] }} Books Loaned</div>
         </div>
         <div class="borrow-stat">
-            <div class="sl" style="font-size:26px; font-weight:900;">{{ $books->sum('borrow_count') }}</div>
-            <div style="font-size:11px; font-weight:700; color:var(--blue); text-transform:uppercase;">Total Dipinjam</div>
+            <div class="si"><img src="{{ asset('images/icon_books_open.png') }}" alt="" style="width:28px;height:28px;object-fit:contain;"></div>
+            <div class="sl">{{ $stats['on_loan'] }} On Loan</div>
         </div>
         <div class="borrow-stat">
-            <div class="sl" style="font-size:26px; font-weight:900;">{{ $books->count('category') > 0 ? $books->unique('category')->count() : 0 }}</div>
-            <div style="font-size:11px; font-weight:700; color:var(--blue); text-transform:uppercase;">Kategori</div>
-        </div>
-        <div class="borrow-stat">
-            <div class="sl" style="font-size:26px; font-weight:900;">{{ $books->count() > 0 ? number_format($books->avg('rating'), 1) : '0.0' }} <span style="font-size:14px; font-weight:400;">/ 5.0</span></div>
-            <div style="font-size:11px; font-weight:700; color:var(--blue); text-transform:uppercase;">Avg Rating</div>
+            <div class="si"><img src="{{ asset('images/icon_clipboard.png') }}" alt="" style="width:28px;height:28px;object-fit:contain;"></div>
+            <div class="sl">{{ $stats['pending'] }} Pending</div>
         </div>
     </div>
 
-    {{-- CATALOG GRID --}}
-    <h3 class="bsection-title">Buku yang Kamu Bagikan</h3>
-
-    @if($books->isEmpty())
-    <div class="empty-state">
-        <div class="el">📚</div>
-        <p>Belum ada buku yang diupload</p>
-        <small>Klik tombol <strong>+</strong> untuk mulai berbagi buku</small>
-    </div>
-    @else
-    <div class="catalog-grid">
-        @foreach($books as $book)
-        <div class="catalog-card">
-            <img src="{{ $book->cover_url }}"
-                 alt="{{ $book->title }}" class="catalog-cover"
-                 onerror="this.style.background='linear-gradient(135deg,#1a3a5c,#2563EB)';this.removeAttribute('src')">
-            <div class="catalog-body">
-                <div class="catalog-title">{{ $book->title }}</div>
-                <div class="catalog-author">{{ $book->author }}</div>
-
-                {{-- Book status badge --}}
-                @php
-                    $statusIcon = match($book->book_status) {
-                        'available' => '🟢',
-                        'on_loan'   => '🟡',
-                        'returned'  => '🔵',
-                        default     => '🟢',
-                    };
-                @endphp
-                <span class="book-status-badge {{ $book->book_status_class }}">
-                    {{ $statusIcon }} {{ $book->book_status_label }}
-                </span>
-
-                {{-- Pending requests notification --}}
-                @php $pendingCount = $book->borrowRequests->where('status', 'pending')->count(); @endphp
-                @if($pendingCount > 0)
-                <div style="font-size:11px; font-weight:700; color:var(--blue); margin-bottom:8px;">
-                    📩 {{ $pendingCount }} permintaan menunggu →
-                    <a href="{{ route('messages') }}" style="color:var(--blue);">Lihat di Messages</a>
-                </div>
-                @endif
-
-                <div class="catalog-meta">
-                    <span class="catalog-category">{{ $book->category }}</span>
-                    @if($book->location)
-                    <span class="catalog-location">📍 {{ $book->location }}</span>
-                    @endif
-                </div>
-                @if($book->description)
-                <div style="font-size:12px; color:var(--gray); line-height:1.6; margin-bottom:10px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
-                    {{ $book->description }}
-                </div>
-                @endif
-                <div class="catalog-actions">
-                    <a href="#modal-edit-{{ $book->id }}" class="edit-btn">✏️ Edit</a>
-                    <a href="#modal-del-{{ $book->id }}"  class="del-btn">🗑 Hapus</a>
-                </div>
+    {{-- ON LOAN SECTION --}}
+    @php $onLoanCount = count(array_filter($items, fn($item) => $item['book_status'] === 'on_loan')); @endphp
+    @if($onLoanCount > 0)
+    <div class="bsection-title">On Loan</div>
+    <div class="borrow-cards">
+      @foreach($items as $item)
+        @if($item['book_status'] === 'on_loan')
+        <div class="borrow-card">
+          <div class="bc-cover">
+            <img src="{{ asset('images/' . $item['cover']) }}" style="width:100%;height:100%;object-fit:cover;" onerror="this.outerHTML='&#128218;'">
+          </div>
+          <div class="bc-info">
+            <div class="bc-title">{{ $item['title'] }}</div>
+            <div class="bc-author">{{ $item['author'] }}</div>
+            <div class="date-row">&#128197; {{ $item['borrow_date'] ?? 'N/A' }}</div>
+            <div class="date-row">&#128198; {{ $item['return_date'] ?? 'N/A' }}</div>
+            <div class="msg-lender">
+              <div class="lender-i">
+                <div class="lender-av"></div>
+                <span style="color:var(--gray);text-decoration:none;font-size:12px;">{{ $item['borrower_name'] ?? 'Borrower' }}</span>
+              </div>
+              <span style="font-size:16px;color:var(--gray);cursor:pointer">&#9992;</span>
             </div>
+          </div>
+          <span class="status-b s-onread">On Loan</span>
         </div>
-        @endforeach
+        @endif
+      @endforeach
+    </div>
+    @endif
+
+    {{-- PENDING LOAN REQUEST SECTION --}}
+    @php $pendingCount = count(array_filter($items, fn($item) => $item['pending_count'] > 0)); @endphp
+    @if($pendingCount > 0)
+    <div class="bsection-title">Pending Loan Request</div>
+    <div class="borrow-cards">
+      @foreach($items as $item)
+        @if($item['pending_count'] > 0)
+        <div class="borrow-card">
+          <div class="bc-cover">
+            <img src="{{ asset('images/' . $item['cover']) }}" style="width:100%;height:100%;object-fit:cover;" onerror="this.outerHTML='&#128218;'">
+          </div>
+          <div class="bc-info">
+            <div class="bc-title">{{ $item['title'] }}</div>
+            <div class="bc-author">{{ $item['author'] }}</div>
+            <div class="date-row">📚 {{ $item['pending_count'] }} pending request(s)</div>
+            <div class="msg-lender">
+              <a href="{{ route('messages') }}" style="color:var(--blue);text-decoration:none;font-size:12px;font-weight:600;">View Requests →</a>
+              <span style="font-size:16px;color:var(--gray);cursor:pointer">&#9992;</span>
+            </div>
+          </div>
+          <span class="status-b s-appeal">Pending</span>
+        </div>
+        @endif
+      @endforeach
+    </div>
+    @endif
+
+    {{-- FINISHED LOANED SECTION --}}
+    @php $finishedCount = count(array_filter($items, fn($item) => $item['book_status'] !== 'on_loan' && $item['pending_count'] === 0)); @endphp
+    @if($finishedCount > 0)
+    <div class="bsection-title">Finished Loaned</div>
+    <div class="borrow-cards">
+      @foreach($items as $item)
+        @if($item['book_status'] !== 'on_loan' && $item['pending_count'] === 0)
+        <div class="borrow-card">
+          <div class="bc-cover">
+            <img src="{{ asset('images/' . $item['cover']) }}" style="width:100%;height:100%;object-fit:cover;" onerror="this.outerHTML='&#128218;'">
+          </div>
+          <div class="bc-info">
+            <div class="bc-title">{{ $item['title'] }}</div>
+            <div class="bc-author">{{ $item['author'] }}</div>
+            <div class="date-row">✅ Available</div>
+            <div class="msg-lender">
+              <span style="color:var(--gray);text-decoration:none;font-size:12px;">Ready to share</span>
+              <span style="font-size:16px;color:var(--gray);cursor:pointer">&#9992;</span>
+            </div>
+          </div>
+          <span class="status-b s-finish">Available</span>
+        </div>
+        @endif
+      @endforeach
     </div>
     @endif
 

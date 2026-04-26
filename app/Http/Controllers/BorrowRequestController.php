@@ -5,25 +5,83 @@ namespace App\Http\Controllers;
 use App\Models\Book;
 use App\Models\BorrowRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class BorrowRequestController extends Controller
 {
+    /**
+     * Display borrowed books page with statistics.
+     * Shows books the current user has borrowed from others.
+     */
+    public function showBorrowed()
+    {
+        // Fetch all borrow requests for the current user
+        $borrowRequests = BorrowRequest::with('book')->where('email', Auth::user()->email)->get();
+        
+        // Organize requests by status for the view
+        $onReadBooks = [];
+        $pendingBooks = [];
+        $finishedBooks = [];
+        
+        foreach ($borrowRequests as $request) {
+            $itemData = [
+                'id'              => $request->id,
+                'title'           => $request->book->title,
+                'author'          => $request->book->author,
+                'cover'           => $request->book->cover,
+                'borrow_date'     => $request->borrow_date->format('m/d/Y'),
+                'return_date'     => $request->return_date ? $request->return_date->format('m/d/Y') : 'TBD',
+                'lender_name'     => $request->book->owner_name,
+                'lender_avatar'   => $request->book->owner_avatar,
+                'lender_id'       => $request->book->id, // Using book id as identifier
+                'status'          => $request->status,
+            ];
+            
+            if ($request->status === 'approved') {
+                $itemData['status'] = 'onread';
+                $itemData['statusLabel'] = 'On Read';
+                $onReadBooks[] = $itemData;
+            } elseif ($request->status === 'pending') {
+                $itemData['status'] = 'appeal';
+                $itemData['statusLabel'] = 'Appealed';
+                $pendingBooks[] = $itemData;
+            } else { // rejected or returned
+                $itemData['status'] = 'finish';
+                $itemData['statusLabel'] = 'Finished';
+                $finishedBooks[] = $itemData;
+            }
+        }
+        
+        // Combine all items maintaining order
+        $items = array_merge($onReadBooks, $pendingBooks, $finishedBooks);
+        
+        // Calculate statistics
+        $stats = [
+            'books_read'   => count($finishedBooks),
+            'on_read'      => count($onReadBooks),
+            'pending'      => count($pendingBooks),
+            'trust_score'  => 4.6, // TODO: Calculate based on lender ratings
+        ];
+        
+        return view('pages.borrow', compact('items', 'stats'));
+    }
+
     /**
      * Store a new borrow request from the book detail page modal.
      */
     public function store(Request $request, Book $book)
     {
         $validated = $request->validate([
-            'full_name'     => 'required|string|max:255',
-            'phone'         => 'required|string|max:50',
-            'email'         => 'required|email|max:255',
             'message'       => 'nullable|string|max:500',
             'borrow_date'   => 'required|date',
             'return_date'   => 'required|date|after_or_equal:borrow_date',
         ]);
 
         $validated['book_id']       = $book->id;
-        $validated['borrower_name'] = $validated['full_name'];
+        $validated['borrower_name'] = Auth::user()->name;
+        $validated['full_name']     = Auth::user()->name;
+        $validated['email']         = Auth::user()->email;
+        $validated['phone']         = '-'; // Default since Users table lacks phone number
         $validated['status']        = 'pending';
 
         BorrowRequest::create($validated);
@@ -52,7 +110,7 @@ class BorrowRequestController extends Controller
             ->where('status', 'pending')
             ->update(['status' => 'rejected']);
 
-        return redirect()->route('messages.show', $borrowRequest->email)
+        return redirect()->route('messages.show', urlencode($borrowRequest->email))
             ->with('success', 'Permintaan peminjaman disetujui!');
     }
 
@@ -63,7 +121,7 @@ class BorrowRequestController extends Controller
     {
         $borrowRequest->update(['status' => 'rejected', 'read_by_owner' => true]);
 
-        return redirect()->route('messages.show', $borrowRequest->email)
+        return redirect()->route('messages.show', urlencode($borrowRequest->email))
             ->with('success', 'Permintaan peminjaman ditolak.');
     }
 

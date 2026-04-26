@@ -36,7 +36,7 @@
     <div class="book-grid">
       @forelse($popularBooks as $book)
       <div class="book-card">
-        <a href="{{ route('book.show', $book->id) }}" style="text-decoration:none;color:inherit;">
+        <a href="{{ route('book.show', $book->id) }}" class="book-link" style="text-decoration:none;color:inherit;">
           <img src="{{ $book->cover_url }}" class="cover" alt="{{ $book->title }}"
                onerror="this.style.background='linear-gradient(135deg,#1a3a5c,#2563EB)';this.removeAttribute('src')">
           <div class="card-body">
@@ -63,7 +63,7 @@
     <div class="book-grid">
       @forelse($recommendedBooks as $book)
       <div class="book-card">
-        <a href="{{ route('book.show', $book->id) }}" style="text-decoration:none;color:inherit;">
+        <a href="{{ route('book.show', $book->id) }}" class="book-link" style="text-decoration:none;color:inherit;">
           <img src="{{ $book->cover_url }}" class="cover" alt="{{ $book->title }}"
                onerror="this.style.background='linear-gradient(135deg,#1a3a5c,#2563EB)';this.removeAttribute('src')">
           <div class="card-body">
@@ -83,4 +83,5 @@
   </div>
 
 </div>
+
 @endsection
