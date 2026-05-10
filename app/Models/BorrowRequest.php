@@ -34,6 +34,22 @@ class BorrowRequest extends Model
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Get messages related to this borrow request
+     */
+    public function messages()
+    {
+        return $this->hasMany(Message::class);
+    }
+
+    /**
+     * Get notifications related to this borrow request
+     */
+    public function notifications()
+    {
+        return $this->morphMany(Notification::class, 'notifiable');
+    }
+
     /** Human-readable request status */
     public function getStatusLabelAttribute(): string
     {

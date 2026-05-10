@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Book;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class BookCatalogController extends Controller
 {
@@ -12,7 +13,7 @@ class BookCatalogController extends Controller
      */
     public function index()
     {
-        $books = Book::with('borrowRequests')->latest()->get();
+        $books = Book::with('borrowRequests')->where('user_id', Auth::id())->latest()->get();
         
         // Organize books by status
         $onLoanBooks = [];
@@ -88,9 +89,10 @@ class BookCatalogController extends Controller
             $validated['cover'] = $filename;
         }
 
-        // Default owner info (can be tied to auth user later)
-        $validated['owner_name']   = 'Me';
-        $validated['owner_avatar'] = 'avatar_user.png';
+        // Set user_id to current authenticated user
+        $validated['user_id']      = Auth::id();
+        $validated['owner_name']   = Auth::user()->name;
+        $validated['owner_avatar'] = Auth::user()->avatar ?? 'avatar_user.png';
 
         Book::create($validated);
 
@@ -102,6 +104,11 @@ class BookCatalogController extends Controller
      */
     public function update(Request $request, Book $book)
     {
+        // Authorization check - ensure user owns this book
+        if ($book->user_id !== Auth::id()) {
+            return redirect()->route('lent')->with('error', 'Unauthorized');
+        }
+
         $validated = $request->validate([
             'title'       => 'required|string|max:255',
             'author'      => 'required|string|max:255',
@@ -128,6 +135,11 @@ class BookCatalogController extends Controller
      */
     public function destroy(Book $book)
     {
+        // Authorization check - ensure user owns this book
+        if ($book->user_id !== Auth::id()) {
+            return redirect()->route('lent')->with('error', 'Unauthorized');
+        }
+
         $book->delete();
         return redirect()->route('lent')->with('success', 'Buku berhasil dihapus dari katalog!');
     }

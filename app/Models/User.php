@@ -44,6 +44,88 @@ class User extends Authenticatable
     }
 
     /**
+     * Get reviews written by this user
+     */
+    public function reviews()
+    {
+        return $this->hasMany(Review::class, 'reviewer_id');
+    }
+
+    /**
+     * Get reviews about this user (as a lender)
+     */
+    public function lenderReviews()
+    {
+        return $this->morphMany(Review::class, 'reviewable')->where('type', 'lender_review');
+    }
+
+    /**
+     * Get messages sent by this user
+     */
+    public function sentMessages()
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    /**
+     * Get messages received by this user
+     */
+    public function receivedMessages()
+    {
+        return $this->hasMany(Message::class, 'recipient_id');
+    }
+
+    /**
+     * Get notifications for this user
+     */
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    /**
+     * Get unread notifications count
+     */
+    public function getUnreadNotificationsCountAttribute(): int
+    {
+        return $this->notifications()->whereNull('read_at')->count();
+    }
+
+    /**
+     * Get books in user's wishlist
+     */
+    public function wishlist()
+    {
+        return $this->belongsToMany(Book::class, 'book_wishlist')->withTimestamps();
+    }
+
+    /**
+     * Check if book is in user's wishlist
+     */
+    public function hasInWishlist(Book $book): bool
+    {
+        return $this->wishlist()->where('book_id', $book->id)->exists();
+    }
+
+    /**
+     * Add book to wishlist
+     */
+    public function addToWishlist(Book $book): void
+    {
+        if (!$this->hasInWishlist($book)) {
+            $this->wishlist()->attach($book->id);
+        }
+    }
+
+    /**
+     * Remove book from wishlist
+     */
+    public function removeFromWishlist(Book $book): void
+    {
+        $this->wishlist()->detach($book->id);
+    }
+
+    /**
      * The attributes that should be hidden for serialization.
      *
      * @var list<string>

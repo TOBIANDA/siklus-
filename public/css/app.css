@@ -233,23 +233,15 @@ body{font-family:'DM Sans',sans-serif;background:#F9FAFB;color:var(--dark);min-h
 }
 
 /* =========================================
-   CSS-ONLY INTERACTIVITY (MESIN PENGGANTI JS)
+   JS DOM INTERACTIVITY (REPLACED CSS-ONLY)
 ========================================= */
 
-/* 1. PAKSA SEMBUNYIKAN CHECKBOX */
-input.hidden-toggle {
-    display: none !important;
-    position: absolute !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-}
-
 /* 2. LOGIKA SIDEBAR EXPAND */
-#sidebar-toggle:checked ~ .body-wrap .sidebar {
+.app.sidebar-expanded .sidebar {
     width: 200px;
     box-shadow: 4px 0 24px rgba(0,0,0,.08);
 }
-#sidebar-toggle:checked ~ .body-wrap .sidebar .nav-label {
+.app.sidebar-expanded .sidebar .nav-label {
     opacity: 1;
     pointer-events: auto;
 }
@@ -275,18 +267,18 @@ input.hidden-toggle {
 .submenu-item:hover, .submenu-item.active {
     color: var(--blue);
 }
-/* Jika checkbox book ditekan, munculkan submenu */
-#borrow-submenu-toggle:checked ~ .body-wrap .sidebar .submenu {
+/* Jika book ditekan, munculkan submenu */
+.app.submenu-expanded .sidebar .submenu {
     display: flex;
 }
 
 /* 4. LOGIKA NOTIFIKASI */
-#notif-toggle:checked ~ .body-wrap .notif-panel {
+.app.notif-expanded .notif-panel {
     transform: translateX(0);
     opacity: 1;
     pointer-events: auto;
 }
 /* Jika sidebar ikut terbuka, geser panel notifikasi ke kanan */
-#sidebar-toggle:checked ~ .body-wrap .notif-panel {
+.app.sidebar-expanded .notif-panel {
     left: 200px; 
 }

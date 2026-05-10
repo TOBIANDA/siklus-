@@ -7,16 +7,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Lato:wght@300;400;700;900&family=DM+Serif+Display&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/responsive.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/components.css') }}">
 </head>
 <body>
 <div class="app">
 
-    <input type="checkbox" id="sidebar-toggle" class="hidden-toggle">
-    <input type="checkbox" id="notif-toggle" class="hidden-toggle">
-    <input type="checkbox" id="borrow-submenu-toggle" class="hidden-toggle">
+
 
     <header class="topbar">
-        <label for="sidebar-toggle" class="hamburger" style="cursor:pointer;">&#9776;</label>
+        <span id="btn-sidebar-toggle" class="hamburger" style="cursor:pointer; display:inline-block;">&#9776;</span>
         
         <a class="logo-text" href="{{ route('home') }}">
             <img src="{{ asset('images/siklus.png') }}" alt="Siklus" style="height:72px;vertical-align:middle;"
@@ -46,20 +46,20 @@
             </a>
             
             <div class="nav-row {{ request()->routeIs('notifications') ? 'active' : '' }}">
-                <label for="notif-toggle" class="nav-item" title="Notifikasi" style="position:relative; cursor:pointer;">
+                <div class="nav-item btn-notif-toggle" title="Notifikasi" style="position:relative; cursor:pointer;">
                     <img src="{{ asset('images/icon_notification.png') }}" alt="Notifications" style="width:22px;height:22px;object-fit:contain;">
                     <span style="position:absolute;top:6px;right:6px;width:8px;height:8px;background:#EF4444;border-radius:50%;border:2px solid white;"></span>
-                </label>
-                <label for="notif-toggle" class="nav-label" style="cursor:pointer;">Notifications</label>
+                </div>
+                <div class="nav-label btn-notif-toggle" style="cursor:pointer;">Notifications</div>
             </div>
 
             <div class="nav-group" style="width:100%;">
                 <div class="nav-row {{ request()->routeIs('borrow') || request()->routeIs('lent') ? 'active' : '' }}">
-                    <label for="borrow-submenu-toggle" class="nav-item" title="Book" style="cursor:pointer;">
+                    <div class="nav-item btn-borrow-toggle" title="Book" style="cursor:pointer;">
                         <img src="{{ asset('images/icon_closed_book.png') }}" alt="Book" style="width:22px;height:22px;object-fit:contain;" 
                              onerror="this.src='{{ asset('images/icon_borrow.png') }}'">
-                    </label>
-                    <label for="borrow-submenu-toggle" class="nav-label" style="cursor:pointer; flex:1;">Book</label>
+                    </div>
+                    <div class="nav-label btn-borrow-toggle" style="cursor:pointer; flex:1;">Book</div>
                 </div>
                 
                 <div class="submenu">
@@ -92,7 +92,7 @@
         <div class="notif-panel" id="notifPanel">
             <div class="notif-panel-header">
                 <h2>Notification</h2>
-                <label for="notif-toggle" class="notif-close" style="cursor:pointer;">&#10005;</label>
+                <div class="notif-close btn-notif-toggle" style="cursor:pointer;">&#10005;</div>
             </div>
             @include('partials.notifications')
         </div>
@@ -105,15 +105,34 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  const sidebarToggle = document.getElementById('sidebar-toggle');
-  const borrowToggle = document.getElementById('borrow-submenu-toggle');
+  const appContainer = document.querySelector('.app');
+  const btnSidebar = document.getElementById('btn-sidebar-toggle');
+  const btnNotif = document.querySelectorAll('.btn-notif-toggle');
+  const btnBorrow = document.querySelectorAll('.btn-borrow-toggle');
 
-  // Auto-expand sidebar ketika dropdown Book diklik
-  if (borrowToggle && sidebarToggle) {
-    borrowToggle.addEventListener('change', function() {
-      if (this.checked && !sidebarToggle.checked) {
-        sidebarToggle.checked = true;
-      }
+  if (btnSidebar) {
+    btnSidebar.addEventListener('click', function() {
+      appContainer.classList.toggle('sidebar-expanded');
+    });
+  }
+
+  if (btnBorrow) {
+    btnBorrow.forEach(btn => {
+      btn.addEventListener('click', function() {
+        appContainer.classList.toggle('submenu-expanded');
+        // Auto-expand sidebar if opening submenu
+        if (appContainer.classList.contains('submenu-expanded') && !appContainer.classList.contains('sidebar-expanded')) {
+          appContainer.classList.add('sidebar-expanded');
+        }
+      });
+    });
+  }
+
+  if (btnNotif) {
+    btnNotif.forEach(btn => {
+      btn.addEventListener('click', function() {
+        appContainer.classList.toggle('notif-expanded');
+      });
     });
   }
 
@@ -125,10 +144,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         this.closest('.book-grid');
       
       if (isBookLink) {
-        if (sidebarToggle && !sidebarToggle.checked) {
-          sidebarToggle.checked = true;
+        if (!appContainer.classList.contains('sidebar-expanded')) {
+          appContainer.classList.add('sidebar-expanded');
           if (window.innerWidth < 768) {
-            setTimeout(() => { sidebarToggle.checked = false; }, 2000);
+            setTimeout(() => { appContainer.classList.remove('sidebar-expanded'); }, 2000);
           }
         }
       }

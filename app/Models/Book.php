@@ -39,6 +39,38 @@ class Book extends Model
         return $this->hasOne(BorrowRequest::class)->where('status', 'approved')->latest();
     }
 
+    /**
+     * Get reviews for this book
+     */
+    public function reviews()
+    {
+        return $this->morphMany(Review::class, 'reviewable')->where('type', 'book_review');
+    }
+
+    /**
+     * Get average rating of this book
+     */
+    public function getAverageRatingAttribute(): float
+    {
+        return $this->reviews()->avg('rating') ?? 0;
+    }
+
+    /**
+     * Get users who have this book in their wishlist
+     */
+    public function wishlistedBy()
+    {
+        return $this->belongsToMany(User::class, 'book_wishlist')->withTimestamps();
+    }
+
+    /**
+     * Get wishlist count for this book
+     */
+    public function getWishlistCountAttribute(): int
+    {
+        return $this->wishlistedBy()->count();
+    }
+
     public function getOwnerNameAttribute(): string
     {
         return $this->user ? $this->user->name : 'Anonymous';

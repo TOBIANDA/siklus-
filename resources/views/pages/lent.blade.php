@@ -134,7 +134,7 @@
         <div>
             <div class="borrow-tabs">
                 <a href="{{ route('borrow') }}" class="borrow-tab" style="text-decoration:none;">Borrowed Books</a>
-                <span class="borrow-tab active" style="cursor:default;">My Books</span>
+                <span class="borrow-tab active" style="cursor:default;">Lent Books</span>
             </div>
             <p style="font-size:12px; color:var(--gray); margin-top:6px;">Buku yang kamu bagikan ke komunitas Siklus</p>
         </div>

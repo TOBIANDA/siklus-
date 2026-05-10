@@ -78,6 +78,7 @@ class BorrowRequestController extends Controller
         ]);
 
         $validated['book_id']       = $book->id;
+        $validated['user_id']       = Auth::id();
         $validated['borrower_name'] = Auth::user()->name;
         $validated['full_name']     = Auth::user()->name;
         $validated['email']         = Auth::user()->email;
