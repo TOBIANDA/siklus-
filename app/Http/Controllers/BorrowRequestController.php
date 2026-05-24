@@ -71,6 +71,12 @@ class BorrowRequestController extends Controller
      */
     public function store(Request $request, Book $book)
     {
+        // Prevent self-borrow
+        if ($book->user_id === Auth::id()) {
+            return redirect()->route('book.show', $book->id)
+                ->with('error', 'Anda tidak dapat meminjam buku milik Anda sendiri.');
+        }
+
         $validated = $request->validate([
             'message'       => 'nullable|string|max:500',
             'borrow_date'   => 'required|date',
@@ -80,7 +86,6 @@ class BorrowRequestController extends Controller
         $validated['book_id']       = $book->id;
         $validated['user_id']       = Auth::id();
         $validated['borrower_name'] = Auth::user()->name;
-        $validated['full_name']     = Auth::user()->name;
         $validated['email']         = Auth::user()->email;
         $validated['phone']         = '-'; // Default since Users table lacks phone number
         $validated['status']        = 'pending';

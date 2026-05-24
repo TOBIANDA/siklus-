@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'title' => 'Pesan',
+    'no_messages' => 'Belum ada pesan',
+    'start_conversation' => 'Mulai percakapan',
+    'message_requests' => 'Permintaan peminjaman buku kamu',
+    'inbox' => 'Kotak Masuk',
+    'online' => 'Online',
+    'last_seen' => 'Terakhir dilihat',
+    'loading_messages' => 'Memuat pesan...',
+    'type_message' => 'Ketik pesan...',
+    'send' => 'Kirim',
+    'connecting' => 'Menghubung ke server obrolan...',
+    'request_details' => 'Detail Permintaan',
+    'book' => 'Buku',
+    'borrower' => 'Peminjam',
+    'duration' => 'Durasi',
+    'pending' => 'Tertunda',
+    'approved' => 'Disetujui',
+    'rejected' => 'Ditolak',
+    'returned' => 'Dikembalikan',
+    'view_request' => 'Lihat Permintaan',
+    'approve' => 'Setujui',
+    'reject' => 'Tolak',
+];

@@ -127,6 +127,18 @@
             z-index: 2;
         }
 
+        /* Sembunyikan icon mata bawaan browser (Edge, Chrome) */
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear,
+        input[type="password"]::-webkit-credentials-auto-fill-button {
+            display: none !important;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        input[type="password"] {
+            -webkit-appearance: none;
+        }
+
         .checkbox-container {
             display: flex;
             align-items: flex-start;
@@ -212,6 +224,7 @@
             @csrf
             <input type="text" name="name" placeholder="Name" value="{{ old('name') }}" required>
             <input type="email" name="email" placeholder="Email" value="{{ old('email') }}" required>
+            <div class="error-message" id="emailWarning" style="display:none; margin-top: -4px;">Email harus memiliki domain yang valid (contoh: .com, .id, .co.id)</div>
 
             <div class="password-wrapper">
                 <input type="password" name="password" placeholder="Password" id="password" required>
@@ -302,6 +315,21 @@
                     this.innerHTML = eyeClosed;
                 } else {
                     this.innerHTML = eyeOpen;
+                }
+            });
+        }
+
+        // Email validation for TLD
+        const emailInput = document.querySelector('input[name="email"]');
+        const emailWarning = document.querySelector('#emailWarning');
+        if (emailInput) {
+            emailInput.addEventListener('blur', function() {
+                const email = this.value.trim();
+                const hasValidTLD = /\.(com|co\.id|id|org|net|edu|io)$/i.test(email);
+                if (email && !hasValidTLD) {
+                    emailWarning.style.display = 'block';
+                } else {
+                    emailWarning.style.display = 'none';
                 }
             });
         }

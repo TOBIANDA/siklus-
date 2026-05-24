@@ -85,7 +85,7 @@
       <div class="author">{{ $book->author }}</div>
       <div class="hero-meta">
         <span>&#128218; {{ $book->category }}</span>
-        <span>&#11088; {{ number_format($book->rating, 1) }} Rating</span>
+        <span>&#11088; {{ number_format($book->rating, 1) }} {{ __('book.rating') }}</span>
         <span>&#128101; {{ $book->borrow_count }}x dipinjam</span>
         @if($book->location)
         <span>&#128205; {{ $book->location }}</span>
@@ -101,10 +101,10 @@
       <div class="desc-tabs">
         <a class="desc-tab {{ request('view', 'desc') === 'desc' ? 'active' : '' }}"
            href="{{ route('book.show', $book->id) }}?view=desc"
-           style="text-decoration:none;color:inherit;">Description</a>
+           style="text-decoration:none;color:inherit;">{{ __('book.description') }}</a>
         <a class="desc-tab {{ request('view') === 'review' ? 'active' : '' }}"
            href="{{ route('book.show', $book->id) }}?view=review"
-           style="text-decoration:none;color:inherit;">Review</a>
+           style="text-decoration:none;color:inherit;">{{ __('book.review') }}</a>
       </div>
 
       @if(request('view', 'desc') === 'desc')
@@ -114,7 +114,7 @@
           <p>{{ $para }}</p>
           @endforeach
         @else
-          <p style="color:var(--gray);">Belum ada deskripsi untuk buku ini.</p>
+          <p style="color:var(--gray);">{{ __('book.no_description') }}</p>
         @endif
       </div>
       @else
@@ -140,7 +140,7 @@
 
       {{-- SIMILAR BOOKS --}}
       <div class="section" style="margin-top:28px;">
-        <div style="margin-bottom:14px;"><span class="section-title">Buku Serupa</span></div>
+        <div style="margin-bottom:14px;"><span class="section-title">{{ __('book.similar_books') }}</span></div>
         <div class="book-grid">
           @foreach(\App\Models\Book::where('category', $book->category)->where('id', '!=', $book->id)->limit(4)->get() as $similar)
           <div class="book-card">
@@ -182,7 +182,7 @@
         </div>
         {{-- Tombol borrow membuka modal --}}
         <a href="#modal-borrow" class="borrow-btn" style="text-decoration:none;display:block;text-align:center;">
-          Borrow from {{ $book->owner_name }}
+          {{ __('book.borrow_from') }} {{ $book->owner_name }}
         </a>
       </div>
     </div>

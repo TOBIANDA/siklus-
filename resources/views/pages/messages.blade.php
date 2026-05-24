@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
+<meta name="user-id" content="{{ auth()->id() }}">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <style>
 /* ===== MESSAGES LAYOUT ===== */
 .inbox-wrap {
@@ -172,9 +174,16 @@
 /* --- Chat bubble for messages --- */
 .chat-bubble-row { display: flex; gap: 10px; align-items: flex-start; }
 .chat-bubble-row.self { flex-direction: row-reverse; }
+.chat-bubble-wrapper {
+    display: flex; flex-direction: column;
+    max-width: 65%; min-width: 0;
+}
+.chat-bubble-row.self .chat-bubble-wrapper { align-items: flex-end; }
 .chat-bubble {
-    max-width: 65%; padding: 12px 16px; border-radius: 16px;
+    padding: 12px 16px; border-radius: 16px;
     font-size: 14px; line-height: 1.5;
+    word-break: break-word;
+    width: fit-content; max-width: 100%;
 }
 .chat-bubble.recv {
     background: var(--white); border: 1px solid var(--gray-border);
@@ -224,8 +233,8 @@
     {{-- ============ SIDEBAR ============ --}}
     <div class="inbox-sidebar">
         <div class="inbox-sidebar-header">
-            <h2>Messages</h2>
-            <div class="inbox-sidebar-sub">Permintaan peminjaman buku kamu</div>
+            <h2>{{ __('messages.title') }}</h2>
+            <div class="inbox-sidebar-sub">{{ __('messages.message_requests') }}</div>
         </div>
         <div class="inbox-list">
             @forelse($requests as $req)
@@ -429,7 +438,7 @@
             {{-- Simulated chat bubbles for context --}}
             <div class="chat-bubble-row {{ !$isOwner ? 'self' : '' }}">
                 @if($isOwner)<div class="inbox-avatar" style="width:32px;height:32px;font-size:12px;flex-shrink:0;">{{ strtoupper(substr($borrower, 0, 1)) }}</div>@endif
-                <div>
+                <div class="chat-bubble-wrapper">
                     <div class="chat-bubble {{ !$isOwner ? 'sent' : 'recv' }}">
                         Halo! Saya tertarik meminjam buku "{{ $book?->title }}". Apakah masih tersedia?
                     </div>
@@ -440,7 +449,7 @@
             @if($req->message)
             <div class="chat-bubble-row {{ !$isOwner ? 'self' : '' }}">
                 @if($isOwner)<div class="inbox-avatar" style="width:32px;height:32px;font-size:12px;flex-shrink:0;">{{ strtoupper(substr($borrower, 0, 1)) }}</div>@endif
-                <div>
+                <div class="chat-bubble-wrapper">
                     <div class="chat-bubble {{ !$isOwner ? 'sent' : 'recv' }}">{{ $req->message }}</div>
                     <div class="chat-time {{ !$isOwner ? 'r' : '' }}">{{ $req->created_at->addSeconds(30)->format('H:i') }}</div>
                 </div>
@@ -450,7 +459,7 @@
             @if($req->status === 'approved')
             <div class="chat-bubble-row {{ $isOwner ? 'self' : '' }}">
                 @if(!$isOwner)<div class="inbox-avatar" style="width:32px;height:32px;font-size:12px;flex-shrink:0;">{{ strtoupper(substr($req->book->owner_name, 0, 1)) }}</div>@endif
-                <div>
+                <div class="chat-bubble-wrapper">
                     <div class="chat-bubble {{ $isOwner ? 'sent' : 'recv' }}">Halo! Permintaanmu sudah saya setujui. Kita bisa COD di lokasi yang kamu sebutkan ya! 📚</div>
                     <div class="chat-time {{ $isOwner ? 'r' : '' }}">{{ $req->updated_at->format('H:i') }}</div>
                 </div>
@@ -458,8 +467,8 @@
             @elseif($req->status === 'rejected')
             <div class="chat-bubble-row {{ $isOwner ? 'self' : '' }}">
                 @if(!$isOwner)<div class="inbox-avatar" style="width:32px;height:32px;font-size:12px;flex-shrink:0;">{{ strtoupper(substr($req->book->owner_name, 0, 1)) }}</div>@endif
-                <div>
-                    <div class="chat-bubble {{ $isOwner ? 'sent' : 'recv' }}" style="background:#EF4444;">Maaf, permintaan peminjaman ini tidak bisa saya setujui saat ini.</div>
+                <div class="chat-bubble-wrapper">
+                    <div class="chat-bubble {{ $isOwner ? 'sent' : 'recv' }}" style="background:#EF4444;color:white;">Maaf, permintaan peminjaman ini tidak bisa saya setujui saat ini.</div>
                     <div class="chat-time {{ $isOwner ? 'r' : '' }}">{{ $req->updated_at->format('H:i') }}</div>
                 </div>
             </div>
@@ -490,3 +499,27 @@
 </div>
 
 @endsection
+
+@vite(['resources/js/app.js'])
+
+@if(isset($activeRequest) && $activeRequest)
+<script>
+  @php
+    $myId = auth()->id();
+    $isOwner = $activeRequest->book->user_id === $myId;
+    if ($isOwner) {
+        // I am the book owner → recipient is the borrower
+        $recipientId = $activeRequest->user_id 
+            ?? \App\Models\User::where('email', $activeRequest->email)->value('id');
+    } else {
+        // I am the borrower → recipient is the book owner
+        $recipientId = $activeRequest->book->user_id;
+    }
+  @endphp
+  
+  window.chatConfig = {
+    currentUserId: {{ auth()->id() }},
+    recipientId: {{ $recipientId ?? 'null' }}
+  };
+</script>
+@endif

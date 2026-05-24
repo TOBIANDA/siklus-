@@ -106,6 +106,18 @@
             z-index: 2;
         }
 
+        /* Sembunyikan icon mata bawaan browser (Edge, Chrome) */
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear,
+        input[type="password"]::-webkit-credentials-auto-fill-button {
+            display: none !important;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        input[type="password"] {
+            -webkit-appearance: none;
+        }
+
         .error-message {
             color: #ff6b6b;
             font-size: 14px;

@@ -6,10 +6,14 @@ use App\Http\Controllers\BorrowRequestController;
 use App\Http\Controllers\MessagesController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\SettingsController;
 use App\Models\Book;
 
 // --- 1. HOME ---
 Route::get('/', function () {
+    if (!auth()->check()) {
+        return redirect()->route('login');
+    }
     $popularBooks     = Book::orderByDesc('borrow_count')->limit(8)->get();
     $recommendedBooks = Book::orderByDesc('rating')->limit(8)->get();
     return view('pages.home', compact('popularBooks', 'recommendedBooks'));
@@ -41,6 +45,11 @@ Route::middleware('auth')->group(function () {
     // --- 4. MESSAGES (Inbox = borrow requests from others) ---
     Route::get('/messages',         [MessagesController::class, 'index'])->name('messages');
     Route::get('/messages/{userId}', [MessagesController::class, 'show'])->name('messages.show');
+    
+    // --- 4.1 MESSAGES API (For Real-time WebSocket Chat) ---
+    Route::post('/api/messages/send', [MessagesController::class, 'store'])->name('messages.store');
+    Route::get('/api/messages/{recipientId}/history', [MessagesController::class, 'getHistory'])->name('messages.history');
+    Route::patch('/api/messages/{messageId}/read', [MessagesController::class, 'markAsRead'])->name('messages.read');
 
     // --- 5. BORROW (my borrowed books list) ---
     Route::get('/borrow', [BorrowRequestController::class, 'showBorrowed'])->name('borrow');
@@ -59,19 +68,12 @@ Route::middleware('auth')->group(function () {
     Route::put('/profile/photo', [ProfileController::class, 'uploadPhoto'])->name('profile.photo');
 
     // --- 8. SETTINGS ---
-    Route::get('/settings', function () {
-        return view('pages.settings');
-    })->name('settings');
-    Route::post('/settings/language', function () {
-        session(['locale' => request('language', 'id')]);
-        return back()->with('success', 'Bahasa berhasil diubah.');
-    })->name('settings.language');
-    Route::post('/settings/notifications', function () {
-        return back()->with('success', 'Preferensi notifikasi disimpan.');
-    })->name('settings.notifications');
-    Route::post('/settings/privacy', function () {
-        return back()->with('success', 'Pengaturan privasi diperbarui.');
-    })->name('settings.privacy');
+    Route::get('/settings',                  [SettingsController::class, 'show'])->name('settings');
+    Route::post('/settings/language',        [SettingsController::class, 'saveLanguage'])->name('settings.language');
+    Route::post('/settings/appearance',      [SettingsController::class, 'saveAppearance'])->name('settings.appearance');
+    Route::post('/settings/notifications',   [SettingsController::class, 'saveNotifications'])->name('settings.notifications');
+    Route::post('/settings/privacy',         [SettingsController::class, 'savePrivacy'])->name('settings.privacy');
+    Route::post('/settings/password',        [SettingsController::class, 'changePassword'])->name('settings.password');
 });
 
 // --- 8. SEARCH ---
@@ -89,3 +91,6 @@ Route::get('/search', function () {
 
     return view('pages.search', compact('query', 'results'));
 })->name('search');
+
+// --- 9. LIVE SEARCH API (returns JSON, used by AJAX fetch) ---
+Route::get('/api/books/search', [BookCatalogController::class, 'liveSearch'])->name('books.live-search');

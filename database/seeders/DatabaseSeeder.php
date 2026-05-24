@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             UsersSeeder::class,
             BooksSeeder::class,
             BorrowRequestsSeeder::class,
+            MessagesSeeder::class,
         ]);
     }
 }

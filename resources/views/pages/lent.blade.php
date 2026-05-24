@@ -133,10 +133,10 @@
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
         <div>
             <div class="borrow-tabs">
-                <a href="{{ route('borrow') }}" class="borrow-tab" style="text-decoration:none;">Borrowed Books</a>
-                <span class="borrow-tab active" style="cursor:default;">Lent Books</span>
+                <a href="{{ route('borrow') }}" class="borrow-tab" style="text-decoration:none;">{{ __('lent.borrowed_books') }}</a>
+                <span class="borrow-tab active" style="cursor:default;">{{ __('lent.lent_books') }}</span>
             </div>
-            <p style="font-size:12px; color:var(--gray); margin-top:6px;">Buku yang kamu bagikan ke komunitas Siklus</p>
+            <p style="font-size:12px; color:var(--gray); margin-top:6px;">{{ __('lent.description') }}</p>
         </div>
         <a href="#modal-create" class="add-btn" style="text-decoration:none;" title="Upload buku baru">+</a>
     </div>
@@ -150,22 +150,22 @@
     <div class="borrow-stats" style="margin-bottom:28px;">
         <div class="borrow-stat">
             <div class="si"><img src="{{ asset('images/icon_closed_book.png') }}" alt="" style="width:28px;height:28px;object-fit:contain;"></div>
-            <div class="sl">{{ $stats['books_loaned'] }} Books Loaned</div>
+            <div class="sl">{{ $stats['books_loaned'] }} {{ __('lent.books_loaned') }}</div>
         </div>
         <div class="borrow-stat">
             <div class="si"><img src="{{ asset('images/icon_books_open.png') }}" alt="" style="width:28px;height:28px;object-fit:contain;"></div>
-            <div class="sl">{{ $stats['on_loan'] }} On Loan</div>
+            <div class="sl">{{ $stats['on_loan'] }} {{ __('lent.on_loan') }}</div>
         </div>
         <div class="borrow-stat">
             <div class="si"><img src="{{ asset('images/icon_clipboard.png') }}" alt="" style="width:28px;height:28px;object-fit:contain;"></div>
-            <div class="sl">{{ $stats['pending'] }} Pending</div>
+            <div class="sl">{{ $stats['pending'] }} {{ __('common.status') }}</div>
         </div>
     </div>
 
     {{-- ON LOAN SECTION --}}
     @php $onLoanCount = count(array_filter($items, fn($item) => $item['book_status'] === 'on_loan')); @endphp
     @if($onLoanCount > 0)
-    <div class="bsection-title">On Loan</div>
+    <div class="bsection-title">{{ __('lent.on_loan') }}</div>
     <div class="borrow-cards">
       @foreach($items as $item)
         @if($item['book_status'] === 'on_loan')
@@ -186,7 +186,7 @@
               <span style="font-size:16px;color:var(--gray);cursor:pointer">&#9992;</span>
             </div>
           </div>
-          <span class="status-b s-onread">On Loan</span>
+          <span class="status-b s-onread">{{ __('lent.on_loan') }}</span>
         </div>
         @endif
       @endforeach
@@ -196,7 +196,7 @@
     {{-- PENDING LOAN REQUEST SECTION --}}
     @php $pendingCount = count(array_filter($items, fn($item) => $item['pending_count'] > 0)); @endphp
     @if($pendingCount > 0)
-    <div class="bsection-title">Pending Loan Request</div>
+    <div class="bsection-title">{{ __('lent.pending_requests') }}</div>
     <div class="borrow-cards">
       @foreach($items as $item)
         @if($item['pending_count'] > 0)
@@ -207,13 +207,13 @@
           <div class="bc-info">
             <div class="bc-title">{{ $item['title'] }}</div>
             <div class="bc-author">{{ $item['author'] }}</div>
-            <div class="date-row">📚 {{ $item['pending_count'] }} pending request(s)</div>
+            <div class="date-row">📚 {{ $item['pending_count'] }} {{ __('lent.pending_request_count') }}</div>
             <div class="msg-lender">
-              <a href="{{ route('messages') }}" style="color:var(--blue);text-decoration:none;font-size:12px;font-weight:600;">View Requests →</a>
+              <a href="{{ route('messages') }}" style="color:var(--blue);text-decoration:none;font-size:12px;font-weight:600;">{{ __('lent.view_requests') }} →</a>
               <span style="font-size:16px;color:var(--gray);cursor:pointer">&#9992;</span>
             </div>
           </div>
-          <span class="status-b s-appeal">Pending</span>
+          <span class="status-b s-appeal">{{ __('messages.pending') }}</span>
         </div>
         @endif
       @endforeach
@@ -223,7 +223,7 @@
     {{-- FINISHED LOANED SECTION --}}
     @php $finishedCount = count(array_filter($items, fn($item) => $item['book_status'] !== 'on_loan' && $item['pending_count'] === 0)); @endphp
     @if($finishedCount > 0)
-    <div class="bsection-title">Finished Loaned</div>
+    <div class="bsection-title">{{ __('lent.finished_loaned') }}</div>
     <div class="borrow-cards">
       @foreach($items as $item)
         @if($item['book_status'] !== 'on_loan' && $item['pending_count'] === 0)
@@ -234,13 +234,13 @@
           <div class="bc-info">
             <div class="bc-title">{{ $item['title'] }}</div>
             <div class="bc-author">{{ $item['author'] }}</div>
-            <div class="date-row">✅ Available</div>
+            <div class="date-row">✅ {{ __('lent.available') }}</div>
             <div class="msg-lender">
-              <span style="color:var(--gray);text-decoration:none;font-size:12px;">Ready to share</span>
+              <span style="color:var(--gray);text-decoration:none;font-size:12px;">{{ __('lent.ready_to_share') }}</span>
               <span style="font-size:16px;color:var(--gray);cursor:pointer">&#9992;</span>
             </div>
           </div>
-          <span class="status-b s-finish">Available</span>
+          <span class="status-b s-finish">{{ __('lent.available') }}</span>
         </div>
         @endif
       @endforeach
@@ -255,24 +255,24 @@
 <div id="modal-create" class="modal-overlay">
     <a href="#" style="position:absolute;inset:0;z-index:0;display:block;"></a>
     <div class="modal-box" style="z-index:1;">
-        <a href="#" class="modal-close" title="Tutup">&#10005;</a>
-        <div style="font-size:20px; font-weight:700; margin-bottom:20px; text-align:center;">📖 Upload Buku ke Katalog</div>
+        <a href="#" class="modal-close" title="{{ __('common.close') }}">&#10005;</a>
+        <div style="font-size:20px; font-weight:700; margin-bottom:20px; text-align:center;">📖 {{ __('lent.upload_new_book') }}</div>
 
         <form action="{{ route('lent.store') }}" method="POST" enctype="multipart/form-data" class="lent-form">
             @csrf
             <div>
-                <label>Judul Buku</label>
+                <label>{{ __('lent.title') }}</label>
                 <input type="text" name="title" class="lent-input" placeholder="The Little Prince" required>
             </div>
             <div>
-                <label>Penulis</label>
+                <label>{{ __('lent.author') }}</label>
                 <input type="text" name="author" class="lent-input" placeholder="Antoine de Saint-Exupéry" required>
             </div>
             <div class="lent-input-row">
                 <div>
-                    <label>Kategori</label>
+                    <label>{{ __('lent.category') }}</label>
                     <select name="category" class="lent-input" required>
-                        <option value="">-- Pilih --</option>
+                        <option value="">-- {{ __('common.select') }} --</option>
                         <option value="Fiksi">Fiksi</option>
                         <option value="Non-Fiksi">Non-Fiksi</option>
                         <option value="Akademik">Akademik</option>
@@ -283,21 +283,21 @@
                     </select>
                 </div>
                 <div>
-                    <label>Lokasi COD</label>
+                    <label>{{ __('lent.location') }}</label>
                     <input type="text" name="location" class="lent-input" placeholder="Malang, Dinoyo">
                 </div>
             </div>
             <div>
-                <label>Deskripsi / Sinopsis</label>
-                <textarea name="description" class="lent-input lent-textarea" placeholder="Ceritakan sedikit tentang buku ini..."></textarea>
+                <label>{{ __('lent.description') }}</label>
+                <textarea name="description" class="lent-input lent-textarea" placeholder="{{ __('lent.description_placeholder') }}" maxlength="500"></textarea>
             </div>
             <div>
-                <label>Cover Buku (opsional)</label>
+                <label>{{ __('lent.cover_optional') }}</label>
                 <input type="file" name="cover" class="lent-input" accept="image/*">
             </div>
             <div class="lent-btn-row">
-                <a href="#" class="lent-cancel">Batal</a>
-                <button type="submit" class="lent-submit">Upload Buku</button>
+                <a href="#" class="lent-cancel">{{ __('common.cancel') }}</a>
+                <button type="submit" class="lent-submit">{{ __('lent.upload_new_book') }}</button>
             </div>
         </form>
     </div>
@@ -335,13 +335,13 @@
                     </select>
                 </div>
                 <div>
-                    <label>Lokasi COD</label>
+                    <label>Lokasi</label>
                     <input type="text" name="location" class="lent-input" value="{{ $book->location }}">
                 </div>
             </div>
             <div>
                 <label>Deskripsi / Sinopsis</label>
-                <textarea name="description" class="lent-input lent-textarea">{{ $book->description }}</textarea>
+                <textarea name="description" class="lent-input lent-textarea" maxlength="500">{{ $book->description }}</textarea>
             </div>
             <div>
                 <label>Ganti Cover (opsional)</label>

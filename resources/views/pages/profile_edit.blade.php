@@ -134,8 +134,8 @@
 
 <div class="settings-container">
     <div class="settings-header">
-        <h2>Settings</h2>
-        <p>Manage your account settings and profile</p>
+        <h2>{{ __('common.settings') }}</h2>
+        <p>{{ __('profile.manage_account') }}</p>
     </div>
 
     @if(session('success'))
@@ -153,10 +153,10 @@
             @endif
         </div>
         <div style="flex: 1;">
-            <label style="display:block; font-size:14px; font-weight:700; color:var(--dark); margin-bottom:8px;">Profile Picture</label>
+            <label style="display:block; font-size:14px; font-weight:700; color:var(--dark); margin-bottom:8px;">{{ __('profile.profile_picture') }}</label>
             <div style="display:flex; gap:12px;">
                 <input type="file" name="photo" accept="image/*" required style="font-size:14px; padding:6px;">
-                <button type="submit" style="background:var(--dark); color:white; border:none; border-radius:4px; padding:8px 16px; font-weight:600; cursor:pointer;">Update</button>
+                <button type="submit" style="background:var(--dark); color:white; border:none; border-radius:4px; padding:8px 16px; font-weight:600; cursor:pointer;">{{ __('common.upload') }}</button>
             </div>
         </div>
     </form>
@@ -166,15 +166,15 @@
         @csrf @method('PUT')
         
         <div class="form-group">
-            <label>Name</label>
+            <label>{{ __('profile.name') }}</label>
             <input type="text" name="name" value="{{ old('name', $user->name) }}" required>
         </div>
 
         <div style="display:flex; gap:16px;">
             <div class="form-group" style="flex:1;">
-                <label>Province</label>
+                <label>{{ __('profile.province') }}</label>
                 <select name="province">
-                    <option value="" disabled {{ !$user->province ? 'selected' : '' }}>Select Province</option>
+                    <option value="" disabled {{ !$user->province ? 'selected' : '' }}>{{ __('profile.select_province') }}</option>
                     <option value="Jawa Barat" {{ $user->province == 'Jawa Barat' ? 'selected' : '' }}>Jawa Barat</option>
                     <option value="Jawa Tengah" {{ $user->province == 'Jawa Tengah' ? 'selected' : '' }}>Jawa Tengah</option>
                     <option value="Jawa Timur" {{ $user->province == 'Jawa Timur' ? 'selected' : '' }}>Jawa Timur</option>
@@ -182,29 +182,29 @@
                 </select>
             </div>
             <div class="form-group" style="flex:1;">
-                <label>City</label>
-                <input type="text" name="city" value="{{ old('city', $user->city) }}" placeholder="e.g. Bandung">
+                <label>{{ __('profile.city') }}</label>
+                <input type="text" name="city" value="{{ old('city', $user->city) }}" placeholder="{{ __('profile.city_placeholder') }}">
             </div>
         </div>
 
         <div class="form-group">
-            <label>Title / Occupation (Optional)</label>
-            <input type="text" name="occupation" value="{{ old('occupation', $user->occupation) }}" placeholder="e.g. Undergraduate Student">
+            <label>{{ __('profile.occupation_optional') }}</label>
+            <input type="text" name="occupation" value="{{ old('occupation', $user->occupation) }}" placeholder="{{ __('profile.occupation_placeholder') }}">
         </div>
 
         <div class="form-group">
-            <label>Bio</label>
-            <textarea name="bio" rows="4" placeholder="Tell the community about yourself...">{{ old('bio', $user->bio) }}</textarea>
+            <label>{{ __('profile.bio_label') }}</label>
+            <textarea name="bio" rows="4" placeholder="{{ __('profile.bio_placeholder') }}">{{ old('bio', $user->bio) }}</textarea>
         </div>
 
-        <button type="submit" class="btn-primary">Save Changes</button>
+        <button type="submit" class="btn-primary">{{ __('profile.save_changes') }}</button>
     </form>
 
     <div class="danger-zone">
-        <h3>Account Actions</h3>
+        <h3>{{ __('profile.account_actions') }}</h3>
         <form action="{{ route('logout') }}" method="POST">
             @csrf
-            <button type="submit" class="btn-danger">Logout</button>
+            <button type="submit" class="btn-danger">{{ __('auth.logout') }}</button>
         </form>
     </div>
 </div>

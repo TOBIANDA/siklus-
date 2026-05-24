@@ -131,6 +131,63 @@ class BookCatalogController extends Controller
     }
 
     /**
+     * Live search endpoint — returns JSON (for AJAX fetch calls).
+     * GET /api/books/search?q=...&category=...&sort=...
+     */
+    public function liveSearch(Request $request)
+    {
+        $query    = trim($request->get('q', ''));
+        $category = $request->get('category', '');
+        $sort     = $request->get('sort', 'popular'); // popular | newest | rating
+
+        $books = Book::query();
+
+        if ($query !== '') {
+            $books->where(function ($q) use ($query) {
+                $q->where('title',    'LIKE', "%{$query}%")
+                  ->orWhere('author',   'LIKE', "%{$query}%")
+                  ->orWhere('category', 'LIKE', "%{$query}%");
+            });
+        }
+
+        if ($category !== '') {
+            $books->where('category', $category);
+        }
+
+        match ($sort) {
+            'newest'  => $books->latest(),
+            'rating'  => $books->orderByDesc('rating'),
+            default   => $books->orderByDesc('borrow_count'),
+        };
+
+        $results = $books->limit(30)->get()->map(function (Book $book) {
+            return [
+                'id'          => $book->id,
+                'title'       => $book->title,
+                'author'      => $book->author,
+                'category'    => $book->category,
+                'cover_url'   => $book->cover_url,
+                'rating'      => number_format($book->rating, 1),
+                'borrow_count'=> $book->borrow_count,
+                'book_status' => $book->book_status,
+                'status_label'=> $book->book_status_label,
+                'url'         => route('book.show', $book->id),
+            ];
+        });
+
+        // Get distinct categories for the filter dropdown
+        $categories = Book::select('category')->distinct()->orderBy('category')->pluck('category');
+
+        return response()->json([
+            'success'    => true,
+            'query'      => $query,
+            'total'      => $results->count(),
+            'results'    => $results,
+            'categories' => $categories,
+        ]);
+    }
+
+    /**
      * Delete a book from the catalog.
      */
     public function destroy(Book $book)

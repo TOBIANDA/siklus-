@@ -14,16 +14,16 @@
       <h1>{{ $hero->title }}</h1>
       <div class="author">{{ $hero->author }}</div>
       <div class="desc">{{ Str::limit($hero->description, 180) }}</div>
-      <a href="{{ route('book.show', $hero->id) }}" class="explore-btn">Explore</a>
+      <a href="{{ route('book.show', $hero->id) }}" class="explore-btn">{{ __('common.explore') }}</a>
     </div>
   </div>
   @else
   <div class="hero hero-dark">
     <div class="hero-bg-text">SIKLUS</div>
     <div class="hero-info">
-      <h1>Selamat datang di Siklus</h1>
-      <div class="author">Platform peminjaman buku P2P mahasiswa</div>
-      <div class="desc">Temukan buku yang ingin kamu baca, atau bagikan koleksimu ke komunitas.</div>
+      <h1>{{ __('home.welcome') }}</h1>
+      <div class="author">{{ __('home.subtitle') }}</div>
+      <div class="desc">{{ __('home.description') }}</div>
     </div>
   </div>
   @endif
@@ -31,7 +31,7 @@
   {{-- POPULAR BOOKS --}}
   <div class="section">
     <div class="section-header">
-      <div class="section-title">Popular Books</div>
+      <div class="section-title">{{ __('home.popular_books') }}</div>
     </div>
     <div class="book-grid">
       @forelse($popularBooks as $book)
@@ -50,7 +50,7 @@
         </a>
       </div>
       @empty
-      <p style="color:var(--gray);font-size:14px;">Belum ada buku tersedia.</p>
+      <p style="color:var(--gray);font-size:14px;">{{ __('home.no_books_available') }}</p>
       @endforelse
     </div>
   </div>
@@ -58,7 +58,7 @@
   {{-- RECOMMENDED FOR YOU --}}
   <div class="section">
     <div class="section-header">
-      <div class="section-title">Recommended For You</div>
+      <div class="section-title">{{ __('home.recommended_for_you') }}</div>
     </div>
     <div class="book-grid">
       @forelse($recommendedBooks as $book)
@@ -77,7 +77,7 @@
         </a>
       </div>
       @empty
-      <p style="color:var(--gray);font-size:14px;">Belum ada rekomendasi.</p>
+      <p style="color:var(--gray);font-size:14px;">{{ __('home.no_recommendations') }}</p>
       @endforelse
     </div>
   </div>

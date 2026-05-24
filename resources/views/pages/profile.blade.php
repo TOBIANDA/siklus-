@@ -125,42 +125,34 @@
 
     <div class="profile-info">
       <h2>{{ $profile['name'] ?? 'User' }} <span class="verified-badge">{{ ($profile['verified'] ?? true) ? '✓ VERIFIED' : '' }}</span></h2>
-      <div class="level">{{ $profile['level'] ?? 'Academic Level 4' }}</div>
-      <div class="bio">{{ $profile['bio'] ?? 'Tidak ada deskripsi' }}</div>
-      <div class="profile-actions">
-        <a href="#modal-edit" class="btn btn-primary" style="text-decoration:none;">Edit Profile</a>
-        <button class="btn btn-outline">Share</button>
+      <div class="level">{{ $profile['level'] ?? 'Reader Level 1' }}</div>
+      <div class="bio">{{ $profile['bio'] ?? 'Pengguna aktif Siklus. Suka berbagi buku dan menemukan bacaan baru.' }}</div>
+      <div class="profile-actions" style="align-items:center;">
+        <a href="{{ route('settings') }}" class="btn btn-primary" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+          &#9881; {{ __('common.settings') }}
+        </a>
+        <button class="btn btn-outline">{{ __('common.share') }}</button>
       </div>
     </div>
   </div>
 
-    <div class="profile-info">
-      <h2>Bro <span class="verified-badge">&#10004; VERIFIED</span></h2>
-      <div class="level">Academic Level 4</div>
-      <div class="bio">Passionate archivist of Indonesian literature and political philosophy. Sharing rare editions to foster intellectual growth within the Siklus community.</div>
-      <div class="profile-actions">
-        <a href="#modal-edit" class="btn btn-primary" style="text-decoration:none;">Edit Profile</a>
-        <button class="btn btn-outline">Share</button>
-      </div>
-    </div>
-  </div>
 
   <!-- STATS -->
   <div class="stats-grid">
     <div class="stat-card">
-      <div><label>BOOKS LISTED</label><div class="value">12</div></div>
+      <div><label>{{ __('profile.books_listed') }}</label><div class="value">12</div></div>
       <div class="stat-icon">
         <img src="{{ asset('images/icon_books_listed.png') }}" alt="" style="width:22px;height:22px;object-fit:contain;" onerror="this.outerHTML='&#128203;'">
       </div>
     </div>
     <div class="stat-card">
-      <div><label>EXCHANGES</label><div class="value">48</div></div>
+      <div><label>{{ __('profile.exchanges') }}</label><div class="value">48</div></div>
       <div class="stat-icon" style="color:var(--green)">
         <img src="{{ asset('images/icon_exchange.png') }}" alt="" style="width:22px;height:22px;object-fit:contain;" onerror="this.outerHTML='&#128260;'">
       </div>
     </div>
     <div class="stat-card">
-      <div><label>RATING</label><div class="value">4.9</div></div>
+      <div><label>{{ __('profile.rating') }}</label><div class="value">4.9</div></div>
       <div class="stat-icon" style="color:var(--yellow)">
         <img src="{{ asset('images/icon_star.png') }}" alt="" style="width:22px;height:22px;object-fit:contain;" onerror="this.outerHTML='&#11088;'">
       </div>
@@ -170,12 +162,12 @@
   <!-- CURATED COLLECTION -->
   <div class="section">
     <div class="section-header">
-      <div class="section-title">Curated Collection</div>
+      <div class="section-title">{{ __('profile.curated_collection') }}</div>
       <div class="section-tabs">
         <a class="section-tab {{ request('tab','academic') === 'academic' ? 'active' : '' }}"
-           href="{{ route('profile') }}?tab=academic" style="text-decoration:none;">ACADEMIC</a>
+           href="{{ route('profile') }}?tab=academic" style="text-decoration:none;">{{ __('profile.academic') }}</a>
         <a class="section-tab {{ request('tab') === 'politics' ? 'active' : '' }}"
-           href="{{ route('profile') }}?tab=politics" style="text-decoration:none;">POLITICS</a>
+           href="{{ route('profile') }}?tab=politics" style="text-decoration:none;">{{ __('profile.politics') }}</a>
       </div>
     </div>
     <div class="book-grid">
@@ -197,19 +189,19 @@
 
   <!-- BADGES -->
   <div class="section">
-    <div class="section-title" style="margin-bottom:16px">Expertise &amp; Badges</div>
+    <div class="section-title" style="margin-bottom:16px">{{ __('profile.expertise_badges') }}</div>
     <div class="badges-grid">
       <div class="badge-item">
         <div class="badge-icon" style="background:#EFF6FF">&#128218;</div>
-        <div><div class="badge-name">History Buff</div><div class="badge-desc">Top 5% contributor</div></div>
+        <div><div class="badge-name">{{ __('profile.history_buff') }}</div><div class="badge-desc">{{ __('profile.top_contributor') }}</div></div>
       </div>
       <div class="badge-item">
         <div class="badge-icon" style="background:#D1FAE5">&#129309;</div>
-        <div><div class="badge-name">Trusted Lender</div><div class="badge-desc">Perfect return rate</div></div>
+        <div><div class="badge-name">{{ __('profile.trusted_lender') }}</div><div class="badge-desc">{{ __('profile.perfect_return_rate') }}</div></div>
       </div>
       <div class="badge-item">
         <div class="badge-icon" style="background:#FEF3C7">&#128214;</div>
-        <div><div class="badge-name">Archivist</div><div class="badge-desc">10+ Rare books listed</div></div>
+        <div><div class="badge-name">{{ __('profile.archivist') }}</div><div class="badge-desc">{{ __('profile.rare_books_listed') }}</div></div>
       </div>
     </div>
   </div>
@@ -242,7 +234,7 @@
       </div>
       <a href="#modal-upload"
         style="font-size:13px;font-weight:600;text-decoration:underline;color:#111827;">
-        Change Photo
+        {{ __('profile.change_photo') }}
       </a>
     </div>
 
@@ -252,15 +244,15 @@
       @csrf
       @method('PUT')
 
-      <h2 style="font-size:22px;font-weight:700;margin:0;">Edit Profile</h2>
+      <h2 style="font-size:22px;font-weight:700;margin:0;">{{ __('profile.edit_profile') }}</h2>
 
       <div>
-        <label class="form-label">Full Name</label>
+        <label class="form-label">{{ __('profile.full_name') }}</label>
         <input type="text" name="name" class="form-input" value="{{ $profile['name'] ?? 'Adidharma Dewabrata Kusumaputra' }}" required>
       </div>
 
       <div>
-        <label class="form-label">Occupation</label>
+        <label class="form-label">{{ __('profile.occupation') }}</label>
         <input type="text" name="occupation" class="form-input" value="{{ $profile['occupation'] ?? 'Undergraduate Student at FILKOM UB' }}">
       </div>
 
@@ -270,8 +262,8 @@
       </div>
 
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px;">
-        <a href="#" class="btn" style="background:#9CA3AF;color:white;text-decoration:none;">Cancel</a>
-        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a href="#" class="btn" style="background:#9CA3AF;color:white;text-decoration:none;">{{ __('common.cancel') }}</a>
+        <button type="submit" class="btn btn-primary">{{ __('profile.save_changes') }}</button>
       </div>
     </form>
   </div>
@@ -305,7 +297,7 @@
             <line x1="15" y1="15" x2="12" y2="12"/>
           </svg>
         </div>
-        <p style="font-size:14px;color:#6B7280;font-weight:500;">Drop file here or click to browse</p>
+        <p style="font-size:14px;color:#6B7280;font-weight:500;">{{ __('profile.drop_file') }}</p>
         <input type="file" id="photo-input" name="photo" accept="image/*" style="display:none;">
       </label>
 
@@ -313,7 +305,7 @@
         style="width:100%;padding:13px;background:var(--blue);color:white;border:none;
                border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;
                font-family:'DM Sans',sans-serif;">
-        Upload
+        {{ __('common.upload') }}
       </button>
     </form>
   </div>

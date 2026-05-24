@@ -31,6 +31,16 @@ class User extends Authenticatable
         'books_listed',
         'exchanges',
         'rating',
+        // Settings preferences
+        'language_preference',
+        'theme_preference',
+        'text_size',
+        'notif_borrow',
+        'notif_message',
+        'notif_return',
+        'notif_updates',
+        'public_profile',
+        'show_location',
     ];
 
     public function books()
@@ -143,8 +153,14 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'email_verified_at'  => 'datetime',
+            'password'          => 'hashed',
+            'notif_borrow'      => 'boolean',
+            'notif_message'     => 'boolean',
+            'notif_return'      => 'boolean',
+            'notif_updates'     => 'boolean',
+            'public_profile'    => 'boolean',
+            'show_location'     => 'boolean',
         ];
     }
 }

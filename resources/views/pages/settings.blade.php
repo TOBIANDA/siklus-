@@ -1,12 +1,19 @@
 @extends('layouts.app')
 
 @section('content')
+@php $user = auth()->user(); @endphp
 <style>
 /* ====== SETTINGS PAGE ====== */
 .settings-wrap {
-    max-width: 760px;
+    max-width: 720px;
     margin: 0 auto;
-    padding: 32px 24px;
+    padding: 28px 20px;
+}
+.settings-page-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: var(--dark);
 }
 
 /* Section card */
@@ -15,16 +22,16 @@
     border: 1px solid var(--gray-border);
     border-radius: 16px;
     overflow: hidden;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 }
 .settings-card-header {
-    padding: 18px 24px 14px;
+    padding: 16px 22px 12px;
     border-bottom: 1px solid var(--gray-border);
 }
 .settings-card-header h3 {
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 800;
-    letter-spacing: .08em;
+    letter-spacing: .1em;
     text-transform: uppercase;
     color: var(--gray);
     margin: 0;
@@ -35,7 +42,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 24px;
+    padding: 14px 22px;
     border-bottom: 1px solid var(--gray-border);
     gap: 16px;
     transition: background .15s;
@@ -55,22 +62,8 @@
     font-size: 12px;
     color: var(--gray);
 }
-.settings-row-value {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--gray);
-    flex-shrink: 0;
-}
-
-/* chevron icon */
-.chevron {
-    width: 20px; height: 20px;
-    color: var(--gray-border);
-    flex-shrink: 0;
-}
 
 /* Toggle switch */
-.toggle-wrap { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .toggle {
     position: relative;
     width: 44px; height: 24px;
@@ -98,7 +91,7 @@
 .toggle input:checked + .toggle-slider { background: var(--blue); }
 .toggle input:checked + .toggle-slider:before { transform: translateX(20px); }
 
-/* Select input */
+/* Select */
 .settings-select {
     padding: 7px 32px 7px 12px;
     border: 1.5px solid var(--gray-border);
@@ -118,344 +111,540 @@
 }
 .settings-select:focus { border-color: var(--blue); }
 
-/* User info row at the top */
+/* Clickable row chevron */
+.row-chevron { color: var(--gray-border); flex-shrink: 0; }
+
+/* User card */
 .settings-user-card {
     background: var(--dark);
     border-radius: 16px;
-    padding: 28px 24px;
+    padding: 24px 22px;
     display: flex;
     align-items: center;
-    gap: 20px;
-    margin-bottom: 28px;
+    gap: 18px;
+    margin-bottom: 24px;
     position: relative;
     overflow: hidden;
 }
 .settings-user-bg {
-    position: absolute;
-    right: -16px; top: 50%;
+    position: absolute; right: -16px; top: 50%;
     transform: translateY(-50%);
-    font-size: 100px;
-    font-weight: 900;
-    opacity: .06;
-    font-family: 'DM Serif Display', serif;
-    letter-spacing: -4px;
-    pointer-events: none;
-    color: white;
+    font-size: 96px; font-weight: 900; opacity: .06;
+    font-family: 'DM Serif Display', serif; letter-spacing: -4px;
+    pointer-events: none; color: white;
 }
 .settings-user-av {
-    width: 64px; height: 64px;
-    border-radius: 50%;
-    border: 2px solid rgba(255,255,255,.2);
-    overflow: hidden;
-    flex-shrink: 0;
-    background: linear-gradient(135deg,#f97316,#f59e0b);
+    width: 60px; height: 60px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,.2); overflow: hidden;
+    flex-shrink: 0; background: linear-gradient(135deg,#f97316,#f59e0b);
     display: flex; align-items: center; justify-content: center;
-    font-size: 24px; font-weight: 700; color: white;
+    font-size: 22px; font-weight: 700; color: white;
 }
 .settings-user-av img { width: 100%; height: 100%; object-fit: cover; }
 .settings-user-info { flex: 1; color: white; }
-.settings-user-info .su-name { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
-.settings-user-info .su-email { font-size: 13px; opacity: .65; margin-bottom: 8px; }
+.settings-user-info .su-name { font-size: 17px; font-weight: 700; margin-bottom: 3px; }
+.settings-user-info .su-email { font-size: 12px; opacity: .6; margin-bottom: 7px; }
 .settings-user-info .su-level {
-    display: inline-block;
-    font-size: 11px; font-weight: 700;
-    background: rgba(255,255,255,.12);
-    padding: 3px 10px; border-radius: 20px;
+    display: inline-block; font-size: 11px; font-weight: 700;
+    background: rgba(255,255,255,.12); padding: 3px 10px; border-radius: 20px;
 }
 .settings-profile-btn {
-    padding: 9px 18px;
-    border: 1.5px solid rgba(255,255,255,.35);
-    border-radius: 8px;
-    color: white;
-    font-size: 13px; font-weight: 600;
-    text-decoration: none;
-    transition: background .15s;
-    flex-shrink: 0;
+    padding: 8px 16px; border: 1.5px solid rgba(255,255,255,.35);
+    border-radius: 8px; color: white; font-size: 13px; font-weight: 600;
+    text-decoration: none; transition: background .15s; flex-shrink: 0;
 }
 .settings-profile-btn:hover { background: rgba(255,255,255,.1); }
 
-/* Logout button */
+/* Logout */
 .logout-btn {
-    width: 100%;
-    text-align: left;
-    padding: 16px 24px;
-    background: none;
-    border: none;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    color: #EF4444;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    width: 100%; text-align: left; padding: 16px 22px;
+    background: none; border: none; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 600; color: #EF4444;
+    cursor: pointer; display: flex; align-items: center; gap: 10px;
     transition: background .15s;
 }
 .logout-btn:hover { background: #FEF2F2; }
-.logout-dot {
-    width: 8px; height: 8px;
+.logout-dot { width: 8px; height: 8px; border-radius: 50%; background: #EF4444; flex-shrink: 0; }
+
+/* Password modal */
+.pw-modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.45); z-index: 300;
+    align-items: center; justify-content: center;
+}
+.pw-modal-overlay.open { display: flex; }
+.pw-modal-box {
+    background: white; border-radius: 16px;
+    padding: 32px; width: 420px; max-width: 95vw; position: relative;
+}
+.pw-modal-close {
+    position: absolute; top: 16px; right: 16px;
+    width: 32px; height: 32px; border-radius: 8px;
+    border: none; background: none;
+    font-size: 18px; cursor: pointer; color: #6B7280;
+    display: flex; align-items: center; justify-content: center;
+}
+.pw-modal-close:hover { background: #F3F4F6; }
+.pw-field { margin-bottom: 16px; }
+.pw-field label {
+    display: block; font-size: 12px; font-weight: 700;
+    letter-spacing: .08em; text-transform: uppercase;
+    color: #6B7280; margin-bottom: 6px;
+}
+.pw-field input {
+    width: 100%; padding: 10px 14px;
+    border: 1.5px solid #E5E7EB; border-radius: 8px;
+    font-family: 'DM Sans', sans-serif; font-size: 14px;
+    outline: none; box-sizing: border-box;
+}
+.pw-field input:focus { border-color: var(--blue); }
+.pw-submit-btn {
+    width: 100%; padding: 13px;
+    background: var(--blue); color: white; border: none;
+    border-radius: 8px; font-size: 15px; font-weight: 600;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; margin-top: 4px;
+}
+.pw-submit-btn:hover { opacity: .9; }
+
+/* Spinner on save */
+.saving-spinner {
+    display: inline-block; width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,.4); border-top-color: white;
+    border-radius: 50%; animation: spin .6s linear infinite; vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Theme preview chips */
+.theme-chips { display: flex; gap: 8px; flex-shrink: 0; }
+.theme-chip {
+    padding: 6px 14px; border-radius: 20px; font-size: 13px;
+    font-weight: 600; cursor: pointer; border: 2px solid var(--gray-border);
+    transition: all .2s; background: var(--white); color: var(--gray);
+}
+.theme-chip.active-light { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+.theme-chip.active-dark  { border-color: #374151; color: white; background: #374151; }
+
+/* Size chips */
+.size-chips { display: flex; gap: 6px; flex-shrink: 0; }
+.size-chip {
+    padding: 5px 12px; border-radius: 20px; font-weight: 600;
+    cursor: pointer; border: 2px solid var(--gray-border);
+    transition: all .2s; background: var(--white); color: var(--gray);
+}
+.size-chip:nth-child(1) { font-size: 11px; }
+.size-chip:nth-child(2) { font-size: 13px; }
+.size-chip:nth-child(3) { font-size: 15px; }
+.size-chip.active { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+/* Language switch loading overlay */
+.lang-loading {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(255,255,255,0.85);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 14px;
+    backdrop-filter: blur(4px);
+}
+.lang-loading.show { display: flex; }
+.lang-loading-spinner {
+    width: 36px; height: 36px;
+    border: 3px solid #E5E7EB;
+    border-top-color: var(--blue);
     border-radius: 50%;
-    background: #EF4444;
-    flex-shrink: 0;
+    animation: spin .7s linear infinite;
 }
-
-/* Alert */
-.settings-alert {
-    background: #D1FAE5; color: #065F46;
-    border-radius: 10px; padding: 12px 18px;
-    font-size: 13px; font-weight: 600;
-    margin-bottom: 20px;
-    display: flex; align-items: center; gap: 8px;
-}
-.settings-alert.error { background: #FEE2E2; color: #991B1B; }
-
-/* Page title */
-.settings-page-title {
-    font-size: 22px;
-    font-weight: 700;
-    margin-bottom: 24px;
-    color: var(--dark);
+.lang-loading p {
+    font-size: 14px; font-weight: 600;
+    color: var(--gray); margin: 0;
+    font-family: 'DM Sans', sans-serif;
 }
 </style>
 
 <div class="settings-wrap">
-
-    <div class="settings-page-title">Settings</div>
-
-    {{-- Flash --}}
-    @if(session('success'))
-    <div class="settings-alert">{{ session('success') }}</div>
-    @endif
-    @if(session('error'))
-    <div class="settings-alert error">{{ session('error') }}</div>
-    @endif
+    <div class="settings-page-title">{{ __('settings.title') }}</div>
 
     {{-- USER CARD --}}
     <div class="settings-user-card">
         <div class="settings-user-bg">SIKLUS</div>
         <div class="settings-user-av">
-            @php $av = auth()->user()->avatar ?? null; @endphp
-            @if($av)
-            <img src="{{ asset('storage/profile/' . $av) }}"
-                 onerror="this.style.display='none';this.parentElement.innerHTML='{{ strtoupper(substr(auth()->user()->name,0,1)) }}'">
+            @if($user->avatar)
+                <img src="{{ asset('storage/profile/' . $user->avatar) }}"
+                     onerror="this.style.display='none';this.parentElement.textContent='{{ strtoupper(substr($user->name,0,1)) }}'">
             @else
-            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                {{ strtoupper(substr($user->name, 0, 1)) }}
             @endif
         </div>
         <div class="settings-user-info">
-            <div class="su-name">{{ auth()->user()->name }}</div>
-            <div class="su-email">{{ auth()->user()->email }}</div>
-            <span class="su-level">{{ auth()->user()->level ?? 'Reader' }}</span>
+            <div class="su-name">{{ $user->name }}</div>
+            <div class="su-email">{{ $user->email }}</div>
+            <span class="su-level">{{ $user->level ?? __('profile.reader_level') . ' 1' }}</span>
         </div>
-        <a href="{{ route('profile') }}" class="settings-profile-btn">Edit Profile</a>
+        <a href="{{ route('profile') }}" class="settings-profile-btn">{{ __('common.edit') }}</a>
     </div>
 
-    {{-- SECTION: PREFERENCES --}}
+    {{-- PREFERENSI —— LANGUAGE --}}
     <div class="settings-card">
-        <div class="settings-card-header"><h3>Preferences</h3></div>
+        <div class="settings-card-header"><h3>{{ __('settings.language') }}</h3></div>
 
-        {{-- Language --}}
-        <form action="{{ route('settings.language') }}" method="POST">
-            @csrf
-            <div class="settings-row">
-                <div class="settings-row-label">
-                    <strong>Language</strong>
-                    <span>Pilih bahasa antarmuka aplikasi</span>
-                </div>
-                <select name="language" class="settings-select"
-                        onchange="this.form.submit()">
-                    <option value="id" {{ (session('locale','id') === 'id') ? 'selected' : '' }}>Indonesia</option>
-                    <option value="en" {{ (session('locale') === 'en') ? 'selected' : '' }}>English</option>
-                    <option value="jv" {{ (session('locale') === 'jv') ? 'selected' : '' }}>Jawa</option>
-                </select>
+        <div class="settings-row">
+            <div class="settings-row-label">
+                <strong>{{ __('settings.language') }}</strong>
+                <span>{{ __('common.select_language') }}</span>
             </div>
-        </form>
+            <select id="sel-language" class="settings-select"
+                    data-url="{{ route('settings.language') }}">
+                <option value="id" {{ ($user->language_preference ?? 'id') === 'id' ? 'selected' : '' }}>🇮🇩 Indonesia</option>
+                <option value="en" {{ ($user->language_preference ?? '') === 'en' ? 'selected' : '' }}>🇬🇧 English</option>
+            </select>
+        </div>
+    </div>
+
+    {{-- TAMPILAN —— THEME + TEXT SIZE --}}
+    <div class="settings-card">
+        <div class="settings-card-header"><h3>{{ __('settings.appearance') }}</h3></div>
 
         {{-- Theme --}}
         <div class="settings-row">
             <div class="settings-row-label">
-                <strong>Theme</strong>
-                <span>Tampilan aplikasi</span>
+                <strong>{{ __('settings.theme') }}</strong>
+                <span>{{ __('common.select_theme') }}</span>
             </div>
-            <div class="settings-row-value">Light</div>
-            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M9 18l6-6-6-6"/>
-            </svg>
+            <div class="theme-chips" id="theme-chips">
+                <button class="theme-chip {{ ($user->theme_preference ?? 'light') === 'light' ? 'active-light' : '' }}"
+                        data-value="light">☀️ {{ __('settings.light') }}</button>
+                <button class="theme-chip {{ ($user->theme_preference ?? '') === 'dark' ? 'active-dark' : '' }}"
+                        data-value="dark">🌙 {{ __('settings.dark') }}</button>
+            </div>
         </div>
 
         {{-- Text Size --}}
         <div class="settings-row">
             <div class="settings-row-label">
-                <strong>Ukuran Teks</strong>
-                <span>Sesuaikan ukuran font</span>
+                <strong>{{ __('settings.text_size') }}</strong>
+                <span>{{ __('common.adjust_text_size') }}</span>
             </div>
-            <div class="settings-row-value">Normal</div>
-            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <div class="size-chips" id="size-chips">
+                <button class="size-chip {{ ($user->text_size ?? '') === 'small'  ? 'active' : '' }}"
+                        data-value="small">A</button>
+                <button class="size-chip {{ ($user->text_size ?? 'normal') === 'normal' ? 'active' : '' }}"
+                        data-value="normal">A</button>
+                <button class="size-chip {{ ($user->text_size ?? '') === 'large'  ? 'active' : '' }}"
+                        data-value="large">A</button>
+            </div>
+        </div>
+    </div>
+
+    {{-- NOTIFIKASI --}}
+    <div class="settings-card">
+        <div class="settings-card-header"><h3>{{ __('settings.notifications') }}</h3></div>
+
+        @php
+        $notifs = [
+            ['id'=>'notif_borrow',  'key'=>'notif_borrow',  'label'=>__('settings.notif_borrow'), 'desc'=>__('settings.notif_borrow_desc')],
+            ['id'=>'notif_message', 'key'=>'notif_message', 'label'=>__('settings.notif_message'), 'desc'=>__('settings.notif_message_desc')],
+            ['id'=>'notif_return',  'key'=>'notif_return',  'label'=>__('settings.notif_return'), 'desc'=>__('settings.notif_return_desc')],
+            ['id'=>'notif_updates', 'key'=>'notif_updates', 'label'=>__('settings.notif_updates'), 'desc'=>__('settings.notif_updates_desc')],
+        ];
+        @endphp
+
+        @foreach($notifs as $n)
+        <div class="settings-row">
+            <div class="settings-row-label">
+                <strong>{{ $n['label'] }}</strong>
+                <span>{{ $n['desc'] }}</span>
+            </div>
+            <label class="toggle">
+                <input type="checkbox" class="notif-toggle"
+                       data-field="{{ $n['key'] }}"
+                       {{ $user->{$n['key']} ?? ($n['key'] !== 'notif_updates') ? 'checked' : '' }}>
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        @endforeach
+    </div>
+
+    {{-- PRIVASI --}}
+    <div class="settings-card">
+        <div class="settings-card-header"><h3>{{ __('settings.privacy') }}</h3></div>
+
+        <div class="settings-row">
+            <div class="settings-row-label">
+                <strong>{{ __('settings.public_profile') }}</strong>
+                <span>{{ __('settings.public_profile_desc') }}</span>
+            </div>
+            <label class="toggle">
+                <input type="checkbox" class="privacy-toggle"
+                       data-field="public_profile"
+                       {{ $user->public_profile ?? true ? 'checked' : '' }}>
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+
+        <div class="settings-row">
+            <div class="settings-row-label">
+                <strong>{{ __('settings.show_location') }}</strong>
+                <span>{{ __('settings.show_location_desc') }}</span>
+            </div>
+            <label class="toggle">
+                <input type="checkbox" class="privacy-toggle"
+                       data-field="show_location"
+                       {{ $user->show_location ?? true ? 'checked' : '' }}>
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+
+        <div class="settings-row" style="cursor:pointer;" id="open-pw-modal">
+            <div class="settings-row-label">
+                <strong>{{ __('settings.change_password') }}</strong>
+                <span>{{ __('settings.change_password_desc') }}</span>
+            </div>
+            <svg class="row-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M9 18l6-6-6-6"/>
             </svg>
         </div>
     </div>
 
-    {{-- SECTION: NOTIFICATIONS --}}
-    <form action="{{ route('settings.notifications') }}" method="POST">
-        @csrf
-        <div class="settings-card">
-            <div class="settings-card-header"><h3>Notifications</h3></div>
-
-            <div class="settings-row">
-                <div class="settings-row-label">
-                    <strong>Permintaan Peminjaman</strong>
-                    <span>Notifikasi saat ada yang ingin meminjam bukumu</span>
-                </div>
-                <label class="toggle">
-                    <input type="checkbox" name="notif_borrow" checked onchange="this.form.submit()">
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-
-            <div class="settings-row">
-                <div class="settings-row-label">
-                    <strong>Pesan Baru</strong>
-                    <span>Notifikasi saat ada pesan masuk</span>
-                </div>
-                <label class="toggle">
-                    <input type="checkbox" name="notif_message" checked onchange="this.form.submit()">
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-
-            <div class="settings-row">
-                <div class="settings-row-label">
-                    <strong>Pengingat Pengembalian</strong>
-                    <span>Notifikasi H-3 sebelum batas pengembalian</span>
-                </div>
-                <label class="toggle">
-                    <input type="checkbox" name="notif_return" checked onchange="this.form.submit()">
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-
-            <div class="settings-row">
-                <div class="settings-row-label">
-                    <strong>Update Fitur Baru</strong>
-                    <span>Info tentang fitur dan pembaruan Siklus</span>
-                </div>
-                <label class="toggle">
-                    <input type="checkbox" name="notif_updates" onchange="this.form.submit()">
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-        </div>
-    </form>
-
-    {{-- SECTION: PRIVACY --}}
-    <form action="{{ route('settings.privacy') }}" method="POST">
-        @csrf
-        <div class="settings-card">
-            <div class="settings-card-header"><h3>Privacy &amp; Security</h3></div>
-
-            <div class="settings-row">
-                <div class="settings-row-label">
-                    <strong>Tampilkan Profil ke Publik</strong>
-                    <span>Pengguna lain bisa melihat profilmu</span>
-                </div>
-                <label class="toggle">
-                    <input type="checkbox" name="public_profile" checked onchange="this.form.submit()">
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-
-            <div class="settings-row">
-                <div class="settings-row-label">
-                    <strong>Tampilkan Lokasi</strong>
-                    <span>Kota kamu terlihat di halaman buku</span>
-                </div>
-                <label class="toggle">
-                    <input type="checkbox" name="show_location" checked onchange="this.form.submit()">
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-
-            <div class="settings-row">
-                <div class="settings-row-label">
-                    <strong>Ganti Password</strong>
-                    <span>Ubah kata sandi akunmu</span>
-                </div>
-                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M9 18l6-6-6-6"/>
-                </svg>
-            </div>
-
-            <div class="settings-row">
-                <div class="settings-row-label">
-                    <strong>Two-Factor Authentication</strong>
-                    <span>Keamanan ekstra untuk akunmu</span>
-                </div>
-                <div class="settings-row-value">Off</div>
-                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M9 18l6-6-6-6"/>
-                </svg>
-            </div>
-        </div>
-    </form>
-
-    {{-- SECTION: ABOUT --}}
+    {{-- TENTANG --}}
     <div class="settings-card">
-        <div class="settings-card-header"><h3>About</h3></div>
+        <div class="settings-card-header"><h3>{{ __('settings.about_app') }}</h3></div>
 
         <div class="settings-row">
             <div class="settings-row-label">
-                <strong>Versi Aplikasi</strong>
-                <span>Siklus Book Exchange</span>
+                <strong>{{ __('settings.app_version') }}</strong>
+                <span>{{ __('settings.app_name') }}</span>
             </div>
-            <div class="settings-row-value">v1.0.0</div>
+            <span style="font-size:13px;font-weight:600;color:var(--gray);">v1.0.0</span>
         </div>
 
-        <div class="settings-row">
+        <a href="mailto:support@siklus.id" class="settings-row" style="text-decoration:none;">
             <div class="settings-row-label">
-                <strong>Kebijakan Privasi</strong>
-                <span>Pelajari cara kami melindungi datamu</span>
+                <strong>{{ __('settings.contact_us') }}</strong>
+                <span>{{ __('settings.contact_email') }}</span>
             </div>
-            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg class="row-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M9 18l6-6-6-6"/>
             </svg>
-        </div>
-
-        <div class="settings-row">
-            <div class="settings-row-label">
-                <strong>Syarat &amp; Ketentuan</strong>
-                <span>Aturan penggunaan platform Siklus</span>
-            </div>
-            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M9 18l6-6-6-6"/>
-            </svg>
-        </div>
-
-        <div class="settings-row">
-            <div class="settings-row-label">
-                <strong>Hubungi Kami</strong>
-                <span>support@siklus.id</span>
-            </div>
-            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M9 18l6-6-6-6"/>
-            </svg>
-        </div>
+        </a>
     </div>
 
     {{-- LOGOUT --}}
     <div class="settings-card">
         <form action="{{ route('logout') }}" method="POST">
             @csrf
-            <button type="submit" class="logout-btn">
+            <button type="submit" class="logout-btn"
+                    onclick="return confirm('Yakin ingin logout dari akun ini?');">
                 <span class="logout-dot"></span>
                 Logout dari akun ini
             </button>
         </form>
     </div>
 
-    <p style="text-align:center; font-size:11px; color:var(--gray); margin-top:8px; letter-spacing:.08em;">
+    <p style="text-align:center;font-size:11px;color:var(--gray);margin-top:8px;letter-spacing:.08em;">
         SIKLUS &mdash; Book Exchange Community &bull; &copy; {{ date('Y') }}
     </p>
-
 </div>
+
+{{-- Language switch loading overlay --}}
+<div class="lang-loading" id="lang-loading">
+    <div class="lang-loading-spinner"></div>
+    <p>{{ app()->getLocale() === 'id' ? 'Mengganti bahasa...' : 'Switching language...' }}</p>
+</div>
+
+{{-- PASSWORD MODAL --}}
+<div id="pw-modal" class="pw-modal-overlay"
+     onclick="if(event.target===this)this.classList.remove('open')">
+    <div class="pw-modal-box">
+        <button class="pw-modal-close"
+                onclick="document.getElementById('pw-modal').classList.remove('open')">&#10005;</button>
+        <h2 style="font-size:20px;font-weight:700;margin:0 0 24px;">Ganti Password</h2>
+
+        <div class="pw-field">
+            <label>Password Saat Ini</label>
+            <input type="password" id="pw-current" placeholder="Masukkan password lama">
+        </div>
+        <div class="pw-field">
+            <label>Password Baru</label>
+            <input type="password" id="pw-new" placeholder="Min. 8 karakter">
+        </div>
+        <div class="pw-field">
+            <label>Konfirmasi Password Baru</label>
+            <input type="password" id="pw-confirm" placeholder="Ulangi password baru">
+        </div>
+        <button class="pw-submit-btn" id="pw-submit-btn">Simpan Password</button>
+    </div>
+</div>
+
+<script>
+(function() {
+    const URLS = {
+        language:      '{{ route("settings.language") }}',
+        appearance:    '{{ route("settings.appearance") }}',
+        notifications: '{{ route("settings.notifications") }}',
+        privacy:       '{{ route("settings.privacy") }}',
+        password:      '{{ route("settings.password") }}',
+    };
+
+    /* ─── helpers ─── */
+    function post(url, data) {
+        return window.saveSetting(url, data);
+    }
+
+    /* ─── LANGUAGE ─── */
+    document.getElementById('sel-language').addEventListener('change', function() {
+        const lang = this.value;
+        const overlay = document.getElementById('lang-loading');
+        const token = document.querySelector('meta[name="csrf-token"]').content;
+        fetch(URLS.language, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': token,
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({ language: lang })
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                // Show smooth loading overlay, then reload so server-side locale takes effect
+                overlay.classList.add('show');
+                setTimeout(() => window.location.reload(), 400);
+            } else {
+                window.showToast(res.message || 'Failed to change language.', true);
+            }
+        })
+        .catch(() => window.showToast('Connection failed.', true));
+    });
+
+    /* ─── THEME CHIPS ─── */
+    let currentTheme = '{{ $user->theme_preference ?? "light" }}';
+    let currentSize  = '{{ $user->text_size ?? "normal" }}';
+
+    function applyAppearance(theme, size) {
+        document.body.setAttribute('data-theme', theme);
+        document.body.setAttribute('data-textsize', size);
+    }
+
+    function saveAppearance(theme, size) {
+        window.saveSetting(URLS.appearance, { theme: theme, text_size: size }, function(res) {
+            currentTheme = res.theme;
+            currentSize  = res.text_size;
+        });
+    }
+
+    document.getElementById('theme-chips').addEventListener('click', function(e) {
+        const btn = e.target.closest('.theme-chip');
+        if (!btn) return;
+        const val = btn.dataset.value;
+        // Update chip styles
+        document.querySelectorAll('.theme-chip').forEach(b => {
+            b.className = 'theme-chip';
+            if (b.dataset.value === val) b.classList.add(val === 'light' ? 'active-light' : 'active-dark');
+        });
+        applyAppearance(val, currentSize);
+        saveAppearance(val, currentSize);
+    });
+
+    /* ─── TEXT SIZE CHIPS ─── */
+    document.getElementById('size-chips').addEventListener('click', function(e) {
+        const btn = e.target.closest('.size-chip');
+        if (!btn) return;
+        const val = btn.dataset.value;
+        document.querySelectorAll('.size-chip').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        applyAppearance(currentTheme, val);
+        saveAppearance(currentTheme, val);
+    });
+
+    /* ─── NOTIFICATION TOGGLES ─── */
+    function collectNotifs() {
+        const data = {};
+        document.querySelectorAll('.notif-toggle').forEach(el => {
+            data[el.dataset.field] = el.checked;
+        });
+        return data;
+    }
+
+    document.querySelectorAll('.notif-toggle').forEach(el => {
+        el.addEventListener('change', function() {
+            window.saveSetting(URLS.notifications, collectNotifs());
+        });
+    });
+
+    /* ─── PRIVACY TOGGLES ─── */
+    function collectPrivacy() {
+        const data = {};
+        document.querySelectorAll('.privacy-toggle').forEach(el => {
+            data[el.dataset.field] = el.checked;
+        });
+        return data;
+    }
+
+    document.querySelectorAll('.privacy-toggle').forEach(el => {
+        el.addEventListener('change', function() {
+            window.saveSetting(URLS.privacy, collectPrivacy());
+        });
+    });
+
+    /* ─── PASSWORD MODAL ─── */
+    document.getElementById('open-pw-modal').addEventListener('click', function() {
+        document.getElementById('pw-modal').classList.add('open');
+    });
+
+    document.getElementById('pw-submit-btn').addEventListener('click', function() {
+        const current = document.getElementById('pw-current').value;
+        const newPw   = document.getElementById('pw-new').value;
+        const confirm = document.getElementById('pw-confirm').value;
+
+        if (!current || !newPw || !confirm) {
+            window.showToast('Semua kolom wajib diisi.', true); return;
+        }
+        if (newPw !== confirm) {
+            window.showToast('Password baru tidak cocok.', true); return;
+        }
+        if (newPw.length < 8) {
+            window.showToast('Password minimal 8 karakter.', true); return;
+        }
+
+        const btn = this;
+        btn.innerHTML = '<span class="saving-spinner"></span> Menyimpan...';
+        btn.disabled = true;
+
+        const token = document.querySelector('meta[name="csrf-token"]').content;
+        fetch(URLS.password, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': token,
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({
+                current_password: current,
+                new_password: newPw,
+                new_password_confirmation: confirm,
+            })
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                window.showToast(res.message);
+                document.getElementById('pw-modal').classList.remove('open');
+                document.getElementById('pw-current').value = '';
+                document.getElementById('pw-new').value = '';
+                document.getElementById('pw-confirm').value = '';
+            } else {
+                window.showToast(res.message || 'Gagal mengubah password.', true);
+            }
+        })
+        .catch(() => window.showToast('Koneksi gagal.', true))
+        .finally(() => {
+            btn.textContent = 'Simpan Password';
+            btn.disabled = false;
+        });
+    });
+})();
+</script>
 @endsection

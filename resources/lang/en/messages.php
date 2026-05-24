@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'title' => 'Messages',
+    'no_messages' => 'No messages yet',
+    'start_conversation' => 'Start a conversation',
+    'message_requests' => 'Your book borrow requests',
+    'inbox' => 'Inbox',
+    'online' => 'Online',
+    'last_seen' => 'Last seen',
+    'loading_messages' => 'Loading messages...',
+    'type_message' => 'Type a message...',
+    'send' => 'Send',
+    'connecting' => 'Connecting to chat server...',
+    'request_details' => 'Request Details',
+    'book' => 'Book',
+    'borrower' => 'Borrower',
+    'duration' => 'Duration',
+    'pending' => 'Pending',
+    'approved' => 'Approved',
+    'rejected' => 'Rejected',
+    'returned' => 'Returned',
+    'view_request' => 'View Request',
+    'approve' => 'Approve',
+    'reject' => 'Reject',
+];
