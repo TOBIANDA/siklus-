@@ -19,7 +19,7 @@
     background: rgba(0,0,0,.5); z-index: 200;
     align-items: center; justify-content: center;
 }
-.modal-overlay:target { display: flex; }
+.modal-overlay:target, .modal-overlay.show { display: flex; }
 
 .modal-box {
     background: var(--white); border-radius: 20px;
@@ -138,7 +138,7 @@
             </div>
             <p style="font-size:12px; color:var(--gray); margin-top:6px;">{{ __('lent.description') }}</p>
         </div>
-        <a href="#modal-create" class="add-btn" style="text-decoration:none;" title="Upload buku baru">+</a>
+        <a href="{{ route('lent.create') }}" class="add-btn" style="text-decoration:none;" title="Upload buku baru">+</a>
     </div>
 
     {{-- FLASH --}}
@@ -247,6 +247,52 @@
     </div>
     @endif
 
+    {{-- ===== KATALOG SEMUA BUKU SAYA ===== --}}
+    <div style="margin-top:32px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <div class="bsection-title" style="margin-bottom:0;">📚 Katalog Buku Saya</div>
+            <span style="font-size:12px;color:var(--gray);">{{ $books->count() }} buku terdaftar</span>
+        </div>
+
+        @if($books->isEmpty())
+        <div class="empty-state">
+            <div class="el">📭</div>
+            <p>Belum ada buku di katalog</p>
+            <small>Klik tombol <strong>+</strong> di atas untuk menambahkan buku pertamamu</small>
+        </div>
+        @else
+        <div class="catalog-grid" id="catalogGrid">
+            @foreach($books as $book)
+            <div class="catalog-card" id="catalog-card-{{ $book->id }}">
+                <img src="{{ asset('images/' . ($book->cover ?? '')) }}"
+                     alt="{{ $book->title }}"
+                     class="catalog-cover"
+                     onerror="this.style.background='linear-gradient(135deg,#1a3a5c,#2563EB)';this.removeAttribute('src')">
+                <div class="catalog-body">
+                    <div class="catalog-title">{{ $book->title }}</div>
+                    <div class="catalog-author">{{ $book->author }}</div>
+                    <div class="catalog-meta">
+                        <span class="catalog-category">{{ $book->category }}</span>
+                        @if($book->location)
+                        <span class="catalog-location">📍 {{ $book->location }}</span>
+                        @endif
+                    </div>
+                    <div style="margin-bottom:10px;">
+                        <span class="book-status-badge {{ $book->book_status === 'on_loan' ? 'status-on-loan' : 'status-available' }}">
+                            {{ $book->book_status === 'on_loan' ? '📤 Sedang Dipinjam' : '✅ Tersedia' }}
+                        </span>
+                    </div>
+                    <div class="catalog-actions">
+                        <a href="#modal-edit-{{ $book->id }}" class="edit-btn">✏️ Edit</a>
+                        <a href="#modal-del-{{ $book->id }}" class="del-btn">🗑 Hapus</a>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+        @endif
+    </div>
+
 </div>
 
 {{-- ====================================================================
@@ -258,7 +304,7 @@
         <a href="#" class="modal-close" title="{{ __('common.close') }}">&#10005;</a>
         <div style="font-size:20px; font-weight:700; margin-bottom:20px; text-align:center;">📖 {{ __('lent.upload_new_book') }}</div>
 
-        <form action="{{ route('lent.store') }}" method="POST" enctype="multipart/form-data" class="lent-form">
+        <form action="{{ route('lent.store') }}" method="POST" enctype="multipart/form-data" class="lent-form" id="form-create-book">
             @csrf
             <div>
                 <label>{{ __('lent.title') }}</label>
@@ -376,5 +422,112 @@
 </div>
 
 @endforeach
+
+{{-- ================================================================
+     AJAX SUBMIT — Form Tambah Buku (fetch, no page reload)
+================================================================ --}}
+<script>
+(function () {
+    'use strict';
+
+    const form       = document.getElementById('form-create-book');
+    const catalogGrid = document.getElementById('catalogGrid');
+    const csrfToken  = document.querySelector('meta[name="csrf-token"]').content;
+
+    if (!form) return;
+
+    // Check if we need to open the modal automatically from session
+    @if(session('open_add'))
+        window.location.hash = 'modal-create';
+    @endif
+
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const origText  = submitBtn.textContent;
+        submitBtn.disabled    = true;
+        submitBtn.textContent = '⏳ Menyimpan...';
+
+        const formData = new FormData(form);
+
+        try {
+            const response = await fetch(form.action, {
+                method : 'POST',
+                headers: {
+                    'Accept'          : 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN'    : csrfToken,
+                },
+                body: formData,
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                // ✅ Tutup modal & reset form
+                window.location.hash = '#';
+                form.reset();
+
+                // ✅ Inject card baru ke catalog grid tanpa reload
+                if (catalogGrid) {
+                    // Hapus empty-state jika ada
+                    const emptyState = document.querySelector('.empty-state');
+                    if (emptyState) emptyState.remove();
+
+                    const book    = data.book;
+                    const cardHtml = `
+                    <div class="catalog-card" id="catalog-card-${book.id}" style="animation:popIn .3s ease;">
+                        <img src="${escHtml(book.cover_url)}"
+                             alt="${escHtml(book.title)}"
+                             class="catalog-cover"
+                             onerror="this.style.background='linear-gradient(135deg,#1a3a5c,#2563EB)';this.removeAttribute('src')">
+                        <div class="catalog-body">
+                            <div class="catalog-title">${escHtml(book.title)}</div>
+                            <div class="catalog-author">${escHtml(book.author)}</div>
+                            <div class="catalog-meta">
+                                <span class="catalog-category">${escHtml(book.category)}</span>
+                                ${book.location ? `<span class="catalog-location">📍 ${escHtml(book.location)}</span>` : ''}
+                            </div>
+                            <div style="margin-bottom:10px;">
+                                <span class="book-status-badge status-available">✅ Tersedia</span>
+                            </div>
+                            <div class="catalog-actions">
+                                <span class="edit-btn" style="cursor:default;opacity:.5;">✏️ Edit</span>
+                                <span class="del-btn"  style="cursor:default;opacity:.5;">🗑 Hapus</span>
+                            </div>
+                        </div>
+                    </div>`;
+
+                    catalogGrid.insertAdjacentHTML('afterbegin', cardHtml);
+                }
+
+                // ✅ Toast sukses
+                if (window.showToast) showToast(data.message);
+
+            } else {
+                // Validasi error
+                const errors = data.errors
+                    ? Object.values(data.errors).flat().join('\n')
+                    : (data.message || 'Terjadi kesalahan.');
+                if (window.showToast) showToast(errors, true);
+            }
+
+        } catch (err) {
+            console.error(err);
+            if (window.showToast) showToast('Gagal terhubung ke server.', true);
+        } finally {
+            submitBtn.disabled    = false;
+            submitBtn.textContent = origText;
+        }
+    });
+
+    function escHtml(str) {
+        return String(str ?? '')
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+})();
+</script>
 
 @endsection

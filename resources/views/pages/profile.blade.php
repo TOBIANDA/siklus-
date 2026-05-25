@@ -117,8 +117,9 @@
     <!-- Avatar + tombol pensil -->
     <div class="avatar-wrap">
       <div class="profile-avatar">
-        <img src="{{ asset('storage/profile/' . ($profile['avatar'] ?? 'avatar_user.png')) }}" alt="User"
-             style="width:100%;height:100%;object-fit:cover;" onerror="this.src='{{ asset('images/avatar_user.png') }}'">
+        <img src="{{ $user->avatar_url }}" alt="{{ $user->name }}"
+             style="width:100%;height:100%;object-fit:cover;" onerror="this.src='{{ asset('images/avatar_user.png') }}'"
+        >
       </div>
       <a href="#modal-upload" class="avatar-pencil" title="Ganti Foto">&#9998;</a>
     </div>
@@ -222,7 +223,7 @@
       <div style="position:relative;display:inline-block;">
         <div style="width:110px;height:110px;border-radius:50%;overflow:hidden;
                     background:linear-gradient(135deg,#f97316,#f59e0b);">
-          <img src="{{ asset('images/avatar_user.png') }}"
+          <img src="{{ $user->avatar_url }}"
                style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">
         </div>
         <a href="#modal-upload"

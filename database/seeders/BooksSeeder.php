@@ -10,6 +10,10 @@ class BooksSeeder extends Seeder
 {
     public function run(): void
     {
+        // Hapus semua data buku lama agar tidak duplikat
+        \DB::table('borrow_requests')->delete();
+        \DB::table('books')->delete();
+
         $adidharma = User::where('email', 'adidharma@gmail.com')->first()->id ?? 1;
         $harun     = User::where('email', 'bangharun@gmail.com')->first()->id ?? 1;
         $tobi      = User::where('email', 'tobi@gmail.com')->first()->id ?? 1;
@@ -19,7 +23,7 @@ class BooksSeeder extends Seeder
             [
                 'title'        => 'The Little Prince',
                 'author'       => 'Antoine de Saint-Exupéry',
-                'cover'        => 'https://m.media-amazon.com/images/I/71OZY035QKL._AC_UF1000,1000_QL80_.jpg',
+                'cover'        => 'cover_the_little_prince.webp',
                 'category'     => 'Fiksi',
                 'description'  => 'Sebuah novela filosofis yang menceritakan seorang pangeran kecil yang bepergian dari planet ke planet.',
                 'user_id'      => $adidharma,
@@ -30,7 +34,7 @@ class BooksSeeder extends Seeder
             [
                 'title'        => 'The Art of Loving',
                 'author'       => 'Erich Fromm',
-                'cover'        => 'https://m.media-amazon.com/images/I/71rNyXLHvaL._AC_UF1000,1000_QL80_.jpg',
+                'cover'        => 'cover_the_art_of_loving.webp',
                 'category'     => 'Non-Fiksi',
                 'description'  => 'Buku psikologi dan filsafat klasik yang menelaah cinta bukan sebagai perasaan pasif, melainkan keterampilan aktif.',
                 'user_id'      => $harun,
@@ -41,7 +45,7 @@ class BooksSeeder extends Seeder
             [
                 'title'        => 'Bumi Manusia',
                 'author'       => 'Pramoedya Ananta Toer',
-                'cover'        => 'https://m.media-amazon.com/images/I/91HG0bMBkJL._AC_UF1000,1000_QL80_.jpg',
+                'cover'        => 'cover_bumi_manusia.webp',
                 'category'     => 'Fiksi',
                 'description'  => 'Novel pertama dari Tetralogi Buru. Berkisah tentang Minke, pemuda pribumi di era kolonial Belanda.',
                 'user_id'      => $tobi,
@@ -52,7 +56,7 @@ class BooksSeeder extends Seeder
             [
                 'title'        => 'Atomic Habits',
                 'author'       => 'James Clear',
-                'cover'        => 'https://m.media-amazon.com/images/I/81YkqyaFVEL._AC_UF1000,1000_QL80_.jpg',
+                'cover'        => 'cover_atomic_habits.webp',
                 'category'     => 'Non-Fiksi',
                 'description'  => 'Panduan praktis membangun kebiasaan baik dan meninggalkan kebiasaan buruk.',
                 'user_id'      => $adidharma,
@@ -61,20 +65,20 @@ class BooksSeeder extends Seeder
                 'borrow_count' => 27,
             ],
             [
-                'title'        => 'Laskar Pelangi',
-                'author'       => 'Andrea Hirata',
-                'cover'        => 'https://m.media-amazon.com/images/I/81eB+70QKXL._AC_UF1000,1000_QL80_.jpg',
-                'category'     => 'Fiksi',
-                'description'  => 'Novel inspiratif tentang sepuluh anak dari keluarga miskin di Belitung yang berjuang mendapatkan pendidikan.',
+                'title'        => 'The Art of Loving',
+                'author'       => 'Erich Fromm',
+                'cover'        => 'cover_art_of_loving.webp',
+                'category'     => 'Non-Fiksi',
+                'description'  => 'Buku psikologi dan filsafat klasik yang menelaah cinta bukan sebagai perasaan pasif, melainkan keterampilan aktif yang bisa dipelajari.',
                 'user_id'      => $harun,
                 'location'     => 'Jakarta Selatan, Kebayoran',
-                'rating'       => 4.8,
-                'borrow_count' => 22,
+                'rating'       => 4.6,
+                'borrow_count' => 18,
             ],
             [
                 'title'        => 'Sapiens: A Brief History of Humankind',
                 'author'       => 'Yuval Noah Harari',
-                'cover'        => 'https://m.media-amazon.com/images/I/713jIoMO3UL._AC_UF1000,1000_QL80_.jpg',
+                'cover'        => 'cover_sapiens.webp',
                 'category'     => 'Non-Fiksi',
                 'description'  => 'Harari mengajak pembaca menilik 70.000 tahun sejarah manusia.',
                 'user_id'      => $tobi,
@@ -85,7 +89,7 @@ class BooksSeeder extends Seeder
             [
                 'title'        => 'Negeri 5 Menara',
                 'author'       => 'Ahmad Fuadi',
-                'cover'        => 'https://m.media-amazon.com/images/I/81hf8+V9g4L._AC_UF1000,1000_QL80_.jpg',
+                'cover'        => 'cover_negeri_5_menara.webp',
                 'category'     => 'Fiksi',
                 'description'  => 'Kisah Alif dan lima sahabatnya di Pondok Madani yang belajar bahwa man jadda wajada.',
                 'user_id'      => $adidharma,
@@ -96,7 +100,7 @@ class BooksSeeder extends Seeder
             [
                 'title'        => 'Rich Dad Poor Dad',
                 'author'       => 'Robert T. Kiyosaki',
-                'cover'        => 'https://m.media-amazon.com/images/I/81BE7eeKzAL._AC_UF1000,1000_QL80_.jpg',
+                'cover'        => 'cover_rich_dad_and_poor_dad.webp',
                 'category'     => 'Non-Fiksi',
                 'description'  => 'Pelajaran keuangan pribadi dari dua sosok "ayah" yang berbeda.',
                 'user_id'      => $harun,
@@ -107,7 +111,7 @@ class BooksSeeder extends Seeder
             [
                 'title'        => 'Perahu Kertas',
                 'author'       => 'Dee Lestari',
-                'cover'        => 'https://m.media-amazon.com/images/I/71LrJfnGLDL._AC_UF1000,1000_QL80_.jpg',
+                'cover'        => 'cover_perahu_kertas.webp',
                 'category'     => 'Fiksi',
                 'description'  => 'Kisah cinta Kugy dan Keenan yang bertemu di Bandung dan menjalani perjalanan hidup yang saling bersilangan.',
                 'user_id'      => $tobi,
@@ -118,7 +122,7 @@ class BooksSeeder extends Seeder
             [
                 'title'        => 'Filosofi Teras',
                 'author'       => 'Henry Manampiring',
-                'cover'        => 'https://m.media-amazon.com/images/I/71l+N4GzM4L._AC_UF1000,1000_QL80_.jpg',
+                'cover'        => 'cover_filosofi_teras.webp',
                 'category'     => 'Non-Fiksi',
                 'description'  => 'Pengantar Stoicisme modern yang disesuaikan dengan budaya Indonesia.',
                 'user_id'      => $adidharma,
@@ -129,7 +133,7 @@ class BooksSeeder extends Seeder
             [
                 'title'        => 'The Psychology of Money',
                 'author'       => 'Morgan Housel',
-                'cover'        => 'https://m.media-amazon.com/images/I/71g2ednj0JL._AC_UF1000,1000_QL80_.jpg',
+                'cover'        => 'cover_psychology_of_money.webp',
                 'category'     => 'Non-Fiksi',
                 'description'  => 'Pelajaran berharga tentang kekayaan, ketamakan, dan kebahagiaan.',
                 'user_id'      => $bro,

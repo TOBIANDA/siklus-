@@ -215,21 +215,6 @@
       @csrf
 
       <div>
-        <label class="form-label">Nama Lengkap</label>
-        <input type="text" name="full_name" class="form-input" placeholder="Budi Santoso" required>
-      </div>
-
-      <div>
-        <label class="form-label">Nomor HP / WhatsApp</label>
-        <input type="text" name="phone" class="form-input" placeholder="08xxxxxxxxxx" required>
-      </div>
-
-      <div>
-        <label class="form-label">Email</label>
-        <input type="email" name="email" class="form-input" placeholder="email@mahasiswa.ac.id" required>
-      </div>
-
-      <div>
         <label class="form-label">Pesan untuk Pemilik (opsional)</label>
         <textarea name="message" class="form-input" rows="2"
           style="resize:none;"

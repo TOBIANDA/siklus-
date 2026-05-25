@@ -83,11 +83,13 @@ class BorrowRequestController extends Controller
             'return_date'   => 'required|date|after_or_equal:borrow_date',
         ]);
 
+        $user = Auth::user();
         $validated['book_id']       = $book->id;
-        $validated['user_id']       = Auth::id();
-        $validated['borrower_name'] = Auth::user()->name;
-        $validated['email']         = Auth::user()->email;
-        $validated['phone']         = '-'; // Default since Users table lacks phone number
+        $validated['user_id']       = $user->id;
+        $validated['borrower_name'] = $user->name;
+        $validated['full_name']     = $user->name;
+        $validated['email']         = $user->email;
+        $validated['phone']         = $user->phone ?? '-'; // Use phone from user if available
         $validated['status']        = 'pending';
 
         BorrowRequest::create($validated);

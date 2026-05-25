@@ -11,6 +11,10 @@ class BorrowRequest extends Model
     protected $fillable = [
         'book_id',
         'user_id',
+        'borrower_name',
+        'full_name',
+        'phone',
+        'email',
         'message',
         'borrow_date',
         'return_date',

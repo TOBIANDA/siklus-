@@ -53,9 +53,10 @@ Route::middleware('auth')->group(function () {
 
     // --- 5. BORROW (my borrowed books list) ---
     Route::get('/borrow', [BorrowRequestController::class, 'showBorrowed'])->name('borrow');
-    Route::get('/borrow/add', fn() => 'Form Tambah Buku')->name('borrow.add');
+    Route::get('/borrow/add', fn() => redirect()->route('lent')->with('open_add', true))->name('borrow.add');
 
     // --- 6. LENT (my books catalog) CRUD ---
+    Route::get('/lent/create',    [BookCatalogController::class, 'create'])->name('lent.create');
     Route::get('/lent',           [BookCatalogController::class, 'index'])->name('lent');
     Route::post('/lent',          [BookCatalogController::class, 'store'])->name('lent.store');
     Route::put('/lent/{book}',    [BookCatalogController::class, 'update'])->name('lent.update');

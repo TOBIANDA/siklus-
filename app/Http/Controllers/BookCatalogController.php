@@ -9,20 +9,33 @@ use Illuminate\Support\Facades\Auth;
 class BookCatalogController extends Controller
 {
     /**
+     * Show the Upload Book page (create form).
+     */
+    public function create()
+    {
+        return view('pages.book_create');
+    }
+
+    /**
      * Show the lent (my books) page with statistics and books organized by status.
      */
     public function index()
     {
-        $books = Book::with('borrowRequests')->where('user_id', Auth::id())->latest()->get();
+        $books = Book::with('borrowRequests')
+            ->where('user_id', Auth::id())
+            ->latest()
+            ->get();
         
-        // Organize books by status
+        // Organize books by status with efficient processing
         $onLoanBooks = [];
         $pendingBooks = [];
         $finishedBooks = [];
         
         foreach ($books as $book) {
-            // Count pending requests for this book
-            $pendingCount = $book->borrowRequests->where('status', 'pending')->count();
+            // Count pending requests from already-loaded relations
+            $pendingCount = $book->borrowRequests
+                ->where('status', 'pending')
+                ->count();
             
             $itemData = [
                 'id'           => $book->id,
@@ -37,8 +50,11 @@ class BookCatalogController extends Controller
                 'pending_count' => $pendingCount,
             ];
             
-            // Get active borrow request if exists
-            $activeBorrow = $book->borrowRequests()->where('status', 'approved')->first();
+            // Get active borrow request from already-loaded relations
+            $activeBorrow = $book->borrowRequests
+                ->where('status', 'approved')
+                ->first();
+            
             if ($activeBorrow) {
                 $itemData['borrow_date']  = $activeBorrow->borrow_date->format('m/d/Y');
                 $itemData['return_date']  = $activeBorrow->return_date ? $activeBorrow->return_date->format('m/d/Y') : 'TBD';
@@ -46,6 +62,7 @@ class BookCatalogController extends Controller
                 $itemData['borrower_email'] = $activeBorrow->email;
             }
             
+            // Categorize by status
             if ($book->book_status === 'on_loan') {
                 $onLoanBooks[] = $itemData;
             } elseif ($pendingCount > 0) {
@@ -89,12 +106,30 @@ class BookCatalogController extends Controller
             $validated['cover'] = $filename;
         }
 
-        // Set user_id to current authenticated user
         $validated['user_id']      = Auth::id();
         $validated['owner_name']   = Auth::user()->name;
         $validated['owner_avatar'] = Auth::user()->avatar ?? 'avatar_user.png';
 
-        Book::create($validated);
+        $book = Book::create($validated);
+
+        // --- AJAX / JSON response ---
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Buku berhasil ditambahkan ke katalog!',
+                'book'    => [
+                    'id'          => $book->id,
+                    'title'       => $book->title,
+                    'author'      => $book->author,
+                    'category'    => $book->category,
+                    'location'    => $book->location,
+                    'cover_url'   => $book->cover_url,
+                    'book_status' => $book->book_status,
+                    'edit_url'    => '#modal-edit-' . $book->id,
+                    'delete_url'  => '#modal-del-' . $book->id,
+                ],
+            ]);
+        }
 
         return redirect()->route('lent')->with('success', 'Buku berhasil ditambahkan ke katalog!');
     }

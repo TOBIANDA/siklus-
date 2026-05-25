@@ -8,7 +8,6 @@
       <a href="{{ route('borrow') }}" class="borrow-tab active" style="text-decoration:none;">{{ __('borrow.borrowed_books') }}</a>
       <a href="{{ route('lent') }}" class="borrow-tab" style="text-decoration:none;">{{ __('borrow.lent_books') }}</a>
     </div>
-    <a href="{{ route('borrow.add') }}" class="add-btn" style="text-decoration:none;">+</a>
   </div>
 
   <div class="borrow-stats">

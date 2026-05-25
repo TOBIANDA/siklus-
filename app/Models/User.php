@@ -43,6 +43,23 @@ class User extends Authenticatable
         'show_location',
     ];
 
+    /**
+     * Resolve the full URL for the user's avatar.
+     * Supports: storage/profile/* uploads, public/images/* seeded files, and fallback.
+     */
+    public function getAvatarUrlAttribute(): string
+    {
+        if (!$this->avatar) {
+            return asset('images/avatar_user.png');
+        }
+        // Uploaded via form → stored in storage/app/public/profile/
+        if (\Storage::disk('public')->exists('profile/' . $this->avatar)) {
+            return asset('storage/profile/' . $this->avatar);
+        }
+        // Seeded avatar in public/images/
+        return asset('images/' . $this->avatar);
+    }
+
     public function books()
     {
         return $this->hasMany(Book::class);

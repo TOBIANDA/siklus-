@@ -12,6 +12,9 @@ class MessagesSeeder extends Seeder
 {
     public function run(): void
     {
+        // Bersihkan pesan lama
+        \DB::table('messages')->delete();
+
         $adidharma = User::where('email', 'adidharma@gmail.com')->first();
         $harun     = User::where('email', 'bangharun@gmail.com')->first();
         $tobi      = User::where('email', 'tobi@gmail.com')->first();
@@ -21,91 +24,97 @@ class MessagesSeeder extends Seeder
         $andrani   = User::where('email', 'andrani@gmail.com')->first();
         $bro       = User::where('email', 'kuahsayurgamingyo@gmail.com')->first();
 
-        if (!$adidharma || !$harun || !$tobi || !$budi || !$siti || !$joko || !$andrani || !$bro) {
-            return;
-        }
+        if (!$adidharma || !$harun || !$tobi || !$bro) return;
 
-        // Helper untuk buat percakapan antara 2 orang
-        // $conv = [ [sender, recipient, pesan, menit_lalu], ... ]
-        $createConversation = function (array $messages, BorrowRequest $req = null) {
-            $base = now()->subHours(2);
+        // Helper: buat percakapan antara 2 orang
+        $createConversation = function (array $messages, $hoursAgo = 2, bool $lastUnread = true) {
+            $base = now()->subHours($hoursAgo);
+            $count = count($messages);
             foreach ($messages as $i => [$sender, $recipient, $content]) {
+                $isLast = ($i === $count - 1);
                 Message::create([
                     'sender_id'        => $sender->id,
                     'recipient_id'     => $recipient->id,
-                    'borrow_request_id'=> $req?->id,
+                    'borrow_request_id'=> null,
                     'content'          => $content,
-                    'read_at'          => now(), // semua sudah dibaca kecuali yang terakhir
-                    'created_at'       => $base->copy()->addMinutes($i * 3),
-                    'updated_at'       => $base->copy()->addMinutes($i * 3),
+                    'read_at'          => ($isLast && $lastUnread) ? null : now(),
+                    'created_at'       => $base->copy()->addMinutes($i * 4),
+                    'updated_at'       => $base->copy()->addMinutes($i * 4),
                 ]);
             }
         };
 
-        // Ambil borrow requests per pasangan
-        $reqAndrani_Adidharma = BorrowRequest::where('user_id', $andrani->id)
-            ->whereHas('book', fn($q) => $q->where('user_id', $adidharma->id))->first();
-
-        $reqBudi_Adidharma = BorrowRequest::where('user_id', $budi->id)
-            ->whereHas('book', fn($q) => $q->where('user_id', $adidharma->id))->first();
-
-        $reqSiti_Adidharma = BorrowRequest::where('user_id', $siti->id)
-            ->whereHas('book', fn($q) => $q->where('user_id', $adidharma->id))->first();
-
-        $reqJoko_Adidharma = BorrowRequest::where('user_id', $joko->id)
-            ->whereHas('book', fn($q) => $q->where('user_id', $adidharma->id))->first();
-
-        $reqTobi_Harun = BorrowRequest::where('user_id', $tobi->id)
-            ->whereHas('book', fn($q) => $q->where('user_id', $harun->id))->first();
-
-        $reqBro_Harun = BorrowRequest::where('user_id', $bro->id)
-            ->whereHas('book', fn($q) => $q->where('user_id', $harun->id))->first();
-
-        $reqAndrani_Bro = BorrowRequest::where('user_id', $andrani->id)
-            ->whereHas('book', fn($q) => $q->where('user_id', $bro->id))->first();
-
-        // ── 1. Andrani ↔ Adidharma (The Little Prince, pending) ──────────────
+        // ── 1. BRO ↔ Bang Harun — chat soal meminjam buku ──────────────────────
         $createConversation([
-            [$andrani,   $adidharma, 'Halo kak! Saya lihat buku The Little Prince kamu di Siklus.'],
-            [$adidharma, $andrani,   'Halo! Iya betul, masih tersedia kok.'],
-            [$andrani,   $adidharma, 'Boleh pinjam minggu ini nggak? Saya di Surabaya, bisa COD akhir pekan.'],
-            [$adidharma, $andrani,   'Hmm, saya di Malang. Tapi bisa kirim via JNE kalau mau.'],
-            [$andrani,   $adidharma, 'Oh bisa! Nanti saya submit request ya kak.'],
-            [$adidharma, $andrani,   'Siap, saya cek segera setelah request masuk 👍'],
-            [$andrani,   $adidharma, 'Udah saya submit kak, ditunggu konfirmasinya!'],
-        ], $reqAndrani_Adidharma);
+            [$bro,   $harun, 'Halo kak Harun! Bukumu yang baru masih tersedia?'],
+            [$harun, $bro,   'Halo! Yang mana nih, The Art of Loving?'],
+            [$bro,   $harun, 'Iya kak, udah lama pengen baca tapi selalu ketinggalan 😅'],
+            [$harun, $bro,   'Haha masih ada kok! Saya request ya?'],
+            [$bro,   $harun, 'Udah saya submit kak, ditunggu konfirmasinya ya!'],
+            [$harun, $bro,   'Oke saya approve sekarang. Nanti hubungi lagi soal COD 📚'],
+            [$bro,   $harun, 'Siap kak! Makasih banyak 🙏'],
+        ], 3, false);
 
-        // ── 2. Budi ↔ Adidharma (Atomic Habits, pending) ─────────────────────
+        // ── 2. BRO ↔ Tobi — chat soal Bumi Manusia (approved/dipinjam) ────────
         $createConversation([
-            [$budi,      $adidharma, 'Kak, Atomic Habits masih available?'],
-            [$adidharma, $budi,      'Masih! Lagi nggak dipinjam siapapun.'],
-            [$budi,      $adidharma, 'Mantap! Saya lagi nge-grind habits baru nih 😅'],
-            [$adidharma, $budi,      'Haha pas banget, buku ini recomended banget!'],
-            [$budi,      $adidharma, 'Saya submit request ya. Bisa 7 hari kan?'],
-            [$adidharma, $budi,      'Bisa, asal balik tepat waktu ya.'],
-        ], $reqBudi_Adidharma);
+            [$bro,  $tobi, 'Tobi, Bumi Manusia masih ada?'],
+            [$tobi, $bro,  'Masih! Baru balik dari peminjam sebelumnya.'],
+            [$bro,  $tobi, 'Wah cocok banget! Aku lagi cari bacaan berat nih.'],
+            [$tobi, $bro,  'Bumi Manusia emang berat tapi bagus banget, dijamin ketagihan.'],
+            [$bro,  $tobi, 'Oke deh, aku submit request ya!'],
+            [$tobi, $bro,  'Sudah aku approve! Bisa COD di Bandung nggak? Atau mau dikirim?'],
+            [$bro,  $tobi, 'Kirim aja kak, aku tanggung ongkirnya.'],
+            [$tobi, $bro,  'Oke, nanti aku pack rapih ya. Estimasi 2 hari sampai.'],
+            [$bro,  $tobi, 'Siap! Makasih tobi 😊'],
+        ], 48, false);
 
-        // ── 3. Siti ↔ Adidharma (Negeri 5 Menara, rejected) ─────────────────
+        // ── 3. BRO ↔ Andrani — Andrani mau pinjam Psychology of Money milik BRO
         $createConversation([
-            [$siti,      $adidharma, 'Halo kak, boleh pinjam Negeri 5 Menara untuk keponakan saya?'],
-            [$adidharma, $siti,      'Halo! Untuk anak berapa tahun?'],
-            [$siti,      $adidharma, 'SMP kelas 2, kira-kira cocok nggak ya?'],
-            [$adidharma, $siti,      'Cocok banget, temanya inspiratif untuk anak muda.'],
-            [$siti,      $adidharma, 'Oke saya submit request ya kak!'],
-            [$adidharma, $siti,      'Maaf ya bu Siti, kebetulan minggu ini buku sedang diperlukan sendiri. Lain kali boleh 🙏'],
-            [$siti,      $adidharma, 'Oh tidak apa-apa kak, terima kasih ya sudah menjawab dengan cepat!'],
-        ], $reqSiti_Adidharma);
+            [$andrani, $bro, 'Halo Bro! Lihat buku The Psychology of Money kamu di Siklus.'],
+            [$bro,     $andrani, 'Halo Andrani! Iya itu buku favorit aku.'],
+            [$andrani, $bro, 'Wah beneran? Boleh pinjem weekend ini nggak?'],
+            [$bro,     $andrani, 'Boleh! Kamu di mana? Bisa COD di Malang nggak?'],
+            [$andrani, $bro, 'Aduh saya di Surabaya... bisa kirim nggak?'],
+            [$bro,     $andrani, 'Hmm bisa sih via Sicepat. Ongkir kamu yang tanggung ya 😄'],
+            [$andrani, $bro, 'Deal! Oke saya submit request sekarang!'],
+            [$andrani, $bro, 'Udah aku submit Bro, cek inbox ya!'],
+        ], 1, true); // pesan terakhir unread → BRO ada notif
 
-        // ── 4. Joko ↔ Adidharma (The Little Prince, pending) ─────────────────
+        // ── 4. BRO ↔ Joko — Joko mau pinjam Psychology of Money ───────────────
         $createConversation([
-            [$joko,      $adidharma, 'Halo kak, buku The Little Prince edisi bahasa apa ini?'],
-            [$adidharma, $joko,      'Edisi terjemahan Indonesia, tapi bagus banget kualitas terjemahannya.'],
-            [$joko,      $adidharma, 'Oh keren! Kondisi buku gimana?'],
-            [$adidharma, $joko,      'Masih bagus, cover oke, halaman lengkap semua.'],
-            [$joko,      $adidharma, 'Siap, saya request dulu ya kak!'],
-        ], $reqJoko_Adidharma);
+            [$joko, $bro, 'Bro, buku psychology of money nya boleh pinjam nggak?'],
+            [$bro,  $joko, 'Boleh! Tapi lagi ada antrian dari Andrani nih.'],
+            [$joko, $bro, 'Oh gitu, nanti aku submit request dulu ya, siapa tau lebih cepet.'],
+            [$bro,  $joko, 'Oke aja, nanti aku kabarin kalau udah kosong.'],
+            [$joko, $bro, 'Siap Bro! Makasih ya 👍'],
+            [$joko, $bro, 'Udah aku submit request nya Bro!'],
+        ], 5, true); // pesan terakhir unread
 
-        // ── 5. Tobi ↔ Bang Harun (The Art of Loving, approved) ───────────────
+        // ── 5. BRO ↔ Adidharma — obrolan biasa ─────────────────────────────────
+        $createConversation([
+            [$bro,       $adidharma, 'Kak Adi, Filosofi Teras udah aku balikin ya minggu lalu.'],
+            [$adidharma, $bro,       'Oh iya sudah aku terima, makasih ya kondisinya masih mulus 👍'],
+            [$bro,       $adidharma, 'Hehe iya aku jaga banget, buku kak Adi bagus-bagus soalnya.'],
+            [$adidharma, $bro,       'Haha senang deh kalau gitu. Nanti ada buku baru mau aku upload nih.'],
+            [$bro,       $adidharma, 'Wah serius? Genre apa kak?'],
+            [$adidharma, $bro,       'Self-improvement lagi, tapi yang fokus ke produktivitas.'],
+            [$bro,       $adidharma, 'Mantap! Notify aku ya kalau udah upload 🙏'],
+        ], 72, false);
+
+        // ── 6. Andrani ↔ Adidharma (The Little Prince, pending) ─────────────────
+        if ($andrani) {
+            $createConversation([
+                [$andrani,   $adidharma, 'Halo kak! Saya lihat buku The Little Prince kamu di Siklus.'],
+                [$adidharma, $andrani,   'Halo! Iya betul, masih tersedia kok.'],
+                [$andrani,   $adidharma, 'Boleh pinjam minggu ini nggak? Saya di Surabaya, bisa COD akhir pekan.'],
+                [$adidharma, $andrani,   'Hmm, saya di Malang. Tapi bisa kirim via JNE kalau mau.'],
+                [$andrani,   $adidharma, 'Oh bisa! Nanti saya submit request ya kak.'],
+                [$adidharma, $andrani,   'Siap, saya cek segera setelah request masuk 👍'],
+                [$andrani,   $adidharma, 'Udah saya submit kak, ditunggu konfirmasinya!'],
+            ], 6, false);
+        }
+
+        // ── 7. Tobi ↔ Bang Harun (The Art of Loving, approved) ───────────────
         $createConversation([
             [$tobi,  $harun, 'Kak Harun, The Art of Loving masih bisa dipinjam?'],
             [$harun, $tobi,  'Bisa dong! Sudah lama nggak ada yang minta.'],
@@ -115,61 +124,6 @@ class MessagesSeeder extends Seeder
             [$harun, $tobi,  'Cukup, tapi kalau butuh lebih bilang aja.'],
             [$harun, $tobi,  'Request sudah saya approve! Kabari ya pas mau ambil 📚'],
             [$tobi,  $harun, 'Siap kak! Makasih banyak, nanti saya hubungi untuk COD.'],
-        ], $reqTobi_Harun);
-
-        // ── 6. Bro ↔ Bang Harun (Laskar Pelangi, pending) ────────────────────
-        $createConversation([
-            [$bro,   $harun, 'Halo kak Harun! Laskar Pelangi masih available?'],
-            [$harun, $bro,   'Halo! Masih ada kok, belum ada yang minjam.'],
-            [$bro,   $harun, 'Mantap! Ini buat tugas literasi kampus. Boleh pinjam seminggu?'],
-            [$harun, $bro,   'Boleh! Biasanya saya minta return tepat waktu ya.'],
-            [$bro,   $harun, 'Siap kak, pasti saya kembalikan on time. Submit request ya!'],
-            [$harun, $bro,   'Oke saya tunggu requestnya 👍'],
-        ], $reqBro_Harun);
-
-        // ── 7. Andrani ↔ Bro (The Psychology of Money, pending) ──────────────
-        $createConversation([
-            [$andrani, $bro, 'Halo Bro! Lihat buku The Psychology of Money kamu di Siklus.'],
-            [$bro,     $andrani, 'Halo Andrani! Iya itu buku favorit aku.'],
-            [$andrani, $bro, 'Wah beneran? Boleh pinjem weekend ini nggak?'],
-            [$bro,     $andrani, 'Boleh! Kamu di mana? Bisa COD di Malang nggak?'],
-            [$andrani, $bro, 'Aduh saya di Surabaya... bisa kirim nggak?'],
-            [$bro,     $andrani, 'Hmm bisa sih via Sicepat. Ongkir kamu yang tanggung ya 😄'],
-            [$andrani, $bro, 'Deal! Oke saya submit request sekarang!'],
-            [$bro,     $andrani, 'Siap, saya cek inbox segera!'],
-        ], $reqAndrani_Bro);
-
-        // ── 8. Budi ↔ Tobi (cross-chat, tidak ada borrow request) ────────────
-        $createConversation([
-            [$budi, $tobi, 'Tobi, kamu punya Perahu Kertas kan? Saya liat di profilmu.'],
-            [$tobi, $budi, 'Iya punya! Kondisi masih bagus.'],
-            [$budi, $tobi, 'Boleh pinjem? Pacar aku lagi minta dicariin buku itu haha'],
-            [$tobi, $budi, 'Hahaha so sweet! Boleh kok, submit request aja.'],
-            [$budi, $tobi, 'Sip! Nanti aku submit ya.'],
-        ], null);
-
-        // ── 9. Siti ↔ Joko (cross-chat, tidak ada borrow request) ───────────
-        $createConversation([
-            [$siti, $joko, 'Mas Joko, ada rekomendasi buku self-help yang bagus?'],
-            [$joko, $siti, 'Ada! Filosofi Teras bagus banget buat mindset sehari-hari.'],
-            [$siti, $joko, 'Wah itu punya siapa ya di Siklus?'],
-            [$joko, $siti, 'Punya Adidharma, bisa langsung cek profilnya.'],
-            [$siti, $joko, 'Makasih mas, langsung saya cek!'],
-            [$joko, $siti, 'Sama-sama! Senang bisa bantu 😊'],
-        ], null);
-
-        // ── 10. Andrani ↔ Tobi (cross-chat) ──────────────────────────────────
-        $createConversation([
-            [$andrani, $tobi, 'Tobi! Bumi Manusia masih ada?'],
-            [$tobi,    $andrani, 'Ada dong! Itu koleksi kesayangan saya.'],
-            [$andrani, $tobi, 'Wah saya pengen banget baca. Kapan bisa dipinjam?'],
-            [$tobi,    $andrani, 'Setelah yang sekarang balik, sekitar 2 minggu lagi.'],
-            [$andrani, $tobi, 'Oke saya daftar antrian dulu ya!'],
-        ], null);
-
-        // Mark pesan terakhir setiap thread sebagai unread (read_at = null)
-        // Ini supaya ada notif unread yang realistis
-        $lastMessages = Message::selectRaw('MAX(id) as id')->groupBy('sender_id', 'recipient_id')->pluck('id');
-        Message::whereIn('id', $lastMessages->take(5))->update(['read_at' => null]);
+        ], 24, false);
     }
 }

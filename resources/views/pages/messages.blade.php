@@ -436,16 +436,6 @@
             </div>
 
             {{-- Simulated chat bubbles for context --}}
-            <div class="chat-bubble-row {{ !$isOwner ? 'self' : '' }}">
-                @if($isOwner)<div class="inbox-avatar" style="width:32px;height:32px;font-size:12px;flex-shrink:0;">{{ strtoupper(substr($borrower, 0, 1)) }}</div>@endif
-                <div class="chat-bubble-wrapper">
-                    <div class="chat-bubble {{ !$isOwner ? 'sent' : 'recv' }}">
-                        Halo! Saya tertarik meminjam buku "{{ $book?->title }}". Apakah masih tersedia?
-                    </div>
-                    <div class="chat-time {{ !$isOwner ? 'r' : '' }}">{{ $req->created_at->format('H:i') }}</div>
-                </div>
-            </div>
-
             @if($req->message)
             <div class="chat-bubble-row {{ !$isOwner ? 'self' : '' }}">
                 @if($isOwner)<div class="inbox-avatar" style="width:32px;height:32px;font-size:12px;flex-shrink:0;">{{ strtoupper(substr($borrower, 0, 1)) }}</div>@endif

@@ -86,177 +86,191 @@
 
 <div class="app">
 
-    <header class="topbar">
-        <span id="btn-sidebar-toggle" class="hamburger" style="cursor:pointer; display:inline-block;">&#9776;</span>
-        
-        <a class="logo-text" href="{{ route('home') }}">
-            <img src="{{ asset('images/siklus.png') }}" alt="Siklus" style="height:72px;vertical-align:middle;"
-                 onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span style=\'font-family:Caveat,cursive;font-size:28px;font-weight:700;\'>Siklus</span>')">
-        </a>
-        
-        <div class="search">
-            <img src="{{ asset('images/search.png') }}" alt="Search" style="width:16px;height:16px;">
-            <form action="{{ route('search') }}" method="GET" style="flex:1;display:flex;">
-                <input type="text" name="q" placeholder="{{ __('navigation.search_placeholder') }}" value="{{ request('q') }}">
-            </form>
-        </div>
+      <header class="topbar">
+          <span id="btn-sidebar-toggle" class="hamburger" style="cursor:pointer; display:inline-block;">&#9776;</span>
+          
+          <a class="logo-text" href="{{ route('home') }}">
+              <img src="{{ asset('images/siklus.png') }}" alt="Siklus" style="height:72px;vertical-align:middle;"
+                   onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span style=\'font-family:Caveat,cursive;font-size:28px;font-weight:700;\'>Siklus</span>')">
+          </a>
+          
+          <div class="search">
+              <img src="{{ asset('images/search.png') }}" alt="Search" style="width:16px;height:16px;">
+              <form action="{{ route('search') }}" method="GET" style="flex:1;display:flex;">
+                  <input type="text" name="q" placeholder="{{ __('navigation.search_placeholder') }}" value="{{ request('q') }}">
+              </form>
+          </div>
 
-        <a href="{{ route('profile') }}" class="top-avatar">
-            <img src="{{ asset('images/avatar_user.png') }}" alt="Profile" style="width:100%;height:100%;object-fit:cover;" 
-                 onerror="this.style.display='none';this.parentElement.innerHTML='&#128018;'">
-        </a>
-    </header>
+          <a href="{{ route('profile') }}" class="top-avatar">
+              <img src="{{ auth()->user()->avatar_url }}" alt="Profile" style="width:100%;height:100%;object-fit:cover;" 
+                   onerror="this.style.display='none';this.parentElement.innerHTML='&#128018;'">
+          </a>
+      </header>
 
-    <div class="body-wrap">
-        <nav class="sidebar" id="mainSidebar">
-            <a href="{{ route('home') }}" class="nav-row {{ request()->routeIs('home') ? 'active' : '' }}" style="text-decoration:none;">
-                <div class="nav-item" title="{{ __('navigation.home') }}">
-                    <img src="{{ asset('images/icon_home.png') }}" alt="{{ __('navigation.home') }}" style="width:22px;height:22px;object-fit:contain;">
-                </div>
-                <span class="nav-label">{{ __('navigation.home') }}</span>
-            </a>
-            
-            <div class="nav-row {{ request()->routeIs('notifications') ? 'active' : '' }}">
-                <div class="nav-item btn-notif-toggle" title="{{ __('navigation.notifications') }}" style="position:relative; cursor:pointer;">
-                    <img src="{{ asset('images/icon_notification.png') }}" alt="{{ __('navigation.notifications') }}" style="width:22px;height:22px;object-fit:contain;">
-                    <span style="position:absolute;top:6px;right:6px;width:8px;height:8px;background:#EF4444;border-radius:50%;border:2px solid white;"></span>
-                </div>
-                <div class="nav-label btn-notif-toggle" style="cursor:pointer;">{{ __('navigation.notifications') }}</div>
-            </div>
-
-
-            <div class="nav-row {{ request()->routeIs('borrow') || request()->routeIs('lent') ? 'active' : '' }}" id="book-nav-row">
-                <div class="nav-item btn-borrow-toggle" title="{{ __('navigation.book') }}" style="cursor:pointer;">
-                    <img src="{{ asset('images/icon_closed_book.png') }}" alt="{{ __('navigation.book') }}" style="width:22px;height:22px;object-fit:contain;"
-                         onerror="this.src='{{ asset('images/icon_borrow.png') }}'">
-                </div>
-                <div class="nav-label btn-borrow-toggle" style="cursor:pointer;">{{ __('navigation.book') }}</div>
-            </div>
-
-            <div class="submenu">
-                <a href="{{ route('borrow') }}" class="submenu-item {{ request()->routeIs('borrow') ? 'active' : '' }}">
-                    <img src="{{ asset('images/icon_borrow.png') }}" alt="{{ __('navigation.borrow') }}" style="width:16px;"> {{ __('navigation.borrow') }}
-                </a>
-                <a href="{{ route('lent') }}" class="submenu-item {{ request()->routeIs('lent') ? 'active' : '' }}">
-                    <img src="{{ asset('images/icon_exchange.png') }}" alt="{{ __('navigation.lent') }}" style="width:16px;"> {{ __('navigation.lent') }}
-                </a>
-            </div>
+      <div class="body-wrap">
+          <nav class="sidebar" id="mainSidebar">
+              <a href="{{ route('home') }}" class="nav-row {{ request()->routeIs('home') ? 'active' : '' }}" style="text-decoration:none;">
+                  <div class="nav-item" title="{{ __('navigation.home') }}">
+                      <img src="{{ asset('images/icon_home.png') }}" alt="{{ __('navigation.home') }}" style="width:22px;height:22px;object-fit:contain;">
+                  </div>
+                  <span class="nav-label">{{ __('navigation.home') }}</span>
+              </a>
+              
+              <div class="nav-row {{ request()->routeIs('notifications') ? 'active' : '' }}">
+                  <div class="nav-item btn-notif-toggle" title="{{ __('navigation.notifications') }}" style="position:relative; cursor:pointer;">
+                      <img src="{{ asset('images/icon_notification.png') }}" alt="{{ __('navigation.notifications') }}" style="width:22px;height:22px;object-fit:contain;">
+                      @if(auth()->check() && auth()->user()->unread_notifications_count > 0)
+                      <span style="position:absolute;top:6px;right:6px;width:8px;height:8px;background:#EF4444;border-radius:50%;border:2px solid white;"></span>
+                      @endif
+                  </div>
+                  <div class="nav-label btn-notif-toggle" style="cursor:pointer;">{{ __('navigation.notifications') }}</div>
+              </div>
 
 
-            <a href="{{ route('messages') }}" class="nav-row {{ request()->routeIs('messages') ? 'active' : '' }}" style="text-decoration:none;">
-                <div class="nav-item" title="{{ __('navigation.messages') }}">
-                    <img src="{{ asset('images/icon_message.png') }}" alt="{{ __('navigation.messages') }}" style="width:22px;height:22px;object-fit:contain;">
-                </div>
-                <span class="nav-label">{{ __('navigation.messages') }}</span>
-            </a>
+              <div class="nav-row {{ request()->routeIs('borrow') || request()->routeIs('lent') ? 'active' : '' }}" id="book-nav-row">
+                  <div class="nav-item btn-borrow-toggle" title="{{ __('navigation.book') }}" style="cursor:pointer;">
+                      <img src="{{ asset('images/icon_closed_book.png') }}" alt="{{ __('navigation.book') }}" style="width:22px;height:22px;object-fit:contain;"
+                           onerror="this.src='{{ asset('images/icon_borrow.png') }}'">
+                  </div>
+                  <div class="nav-label btn-borrow-toggle" style="cursor:pointer;">{{ __('navigation.book') }}</div>
+              </div>
 
-            <div class="spacer"></div>
+              <div class="submenu">
+                  <a href="{{ route('borrow') }}" class="submenu-item {{ request()->routeIs('borrow') ? 'active' : '' }}">
+                      <img src="{{ asset('images/icon_borrow.png') }}" alt="{{ __('navigation.borrow') }}" style="width:16px;"> {{ __('navigation.borrow') }}
+                  </a>
+                  <a href="{{ route('lent') }}" class="submenu-item {{ request()->routeIs('lent') ? 'active' : '' }}">
+                      <img src="{{ asset('images/icon_exchange.png') }}" alt="{{ __('navigation.lent') }}" style="width:16px;"> {{ __('navigation.lent') }}
+                  </a>
+              </div>
 
-            <a href="{{ route('settings') }}" class="nav-row {{ request()->routeIs('settings') ? 'active' : '' }}" style="text-decoration:none;">
-                <div class="nav-item" title="{{ __('navigation.settings') }}">
-                    <img src="{{ asset('images/icon_settings.png') }}" alt="{{ __('navigation.settings') }}" style="width:22px;height:22px;object-fit:contain;">
-                </div>
-                <span class="nav-label">{{ __('navigation.settings') }}</span>
-            </a>
-        </nav>
 
-        <div class="notif-panel" id="notifPanel">
-            <div class="notif-panel-header">
-                <h2>{{ __('navigation.notifications') }}</h2>
-                <div class="notif-close btn-notif-toggle" style="cursor:pointer;">&#10005;</div>
-            </div>
-            <div class="notif-scroll-area">
-                @include('partials.notifications')
-            </div>
-        </div>
+              <a href="{{ route('messages') }}" class="nav-row {{ request()->routeIs('messages') ? 'active' : '' }}" style="text-decoration:none;">
+                  <div class="nav-item" title="{{ __('navigation.messages') }}">
+                      <img src="{{ asset('images/icon_message.png') }}" alt="{{ __('navigation.messages') }}" style="width:22px;height:22px;object-fit:contain;">
+                  </div>
+                  <span class="nav-label">{{ __('navigation.messages') }}</span>
+              </a>
 
-        <main class="page active" style="flex:1;overflow-y:auto; padding:24px;">
-            @yield('content')
-        </main>
-    </div>
-</div>
+              <div class="spacer"></div>
 
-<script>
-// ===== GLOBAL TOAST =====
-window.showToast = function(msg, isError = false) {
-    const t = document.getElementById('settings-toast');
-    t.textContent = (isError ? '✕ ' : '✓ ') + msg;
-    t.className = 'show' + (isError ? ' error' : '');
-    clearTimeout(window._toastTimer);
-    window._toastTimer = setTimeout(() => { t.className = t.className.replace('show','').trim(); }, 3000);
-};
+              <a href="{{ route('settings') }}" class="nav-row {{ request()->routeIs('settings') ? 'active' : '' }}" style="text-decoration:none;">
+                  <div class="nav-item" title="{{ __('navigation.settings') }}">
+                      <img src="{{ asset('images/icon_settings.png') }}" alt="{{ __('navigation.settings') }}" style="width:22px;height:22px;object-fit:contain;">
+                  </div>
+                  <span class="nav-label">{{ __('navigation.settings') }}</span>
+              </a>
+          </nav>
 
-// ===== GLOBAL AJAX SETTINGS SAVE =====
-window.saveSetting = function(url, data, onSuccess) {
-    const token = document.querySelector('meta[name="csrf-token"]').content;
-    fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': token,
-            'Accept': 'application/json',
-        },
-        body: JSON.stringify(data)
-    })
-    .then(r => r.json())
-    .then(res => {
-        if (res.success) {
-            showToast(res.message || 'Tersimpan!');
-            if (onSuccess) onSuccess(res);
-        } else {
-            showToast(res.message || 'Gagal menyimpan.', true);
-        }
-    })
-    .catch(() => showToast('{{ __('messages.connection_failed') }}', true));
-};
+          <div class="notif-panel" id="notifPanel">
+              <div class="notif-panel-header">
+                  <h2>{{ __('navigation.notifications') }}</h2>
+                  <div class="notif-close btn-notif-toggle" style="cursor:pointer;">&#10005;</div>
+              </div>
+              <div class="notif-scroll-area">
+                  @include('partials.notifications')
+              </div>
+          </div>
 
-document.addEventListener('DOMContentLoaded', function() {
-  const appContainer = document.querySelector('.app');
-  const btnSidebar = document.getElementById('btn-sidebar-toggle');
-  const btnNotif = document.querySelectorAll('.btn-notif-toggle');
-  const btnBorrow = document.querySelectorAll('.btn-borrow-toggle');
+          <main class="page active" style="flex:1;overflow-y:auto; padding:24px;">
+              @yield('content')
+          </main>
+      </div>
+  </div>
 
-  if (btnSidebar) {
-    btnSidebar.addEventListener('click', function() {
-      appContainer.classList.toggle('sidebar-expanded');
-    });
+  <script>
+  // ===== GLOBAL TOAST =====
+  window.showToast = function(msg, isError = false) {
+      const t = document.getElementById('settings-toast');
+      t.textContent = (isError ? '✕ ' : '✓ ') + msg;
+      t.className = 'show' + (isError ? ' error' : '');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => { t.className = t.className.replace('show','').trim(); }, 3000);
+  };
+
+  // ===== GLOBAL AJAX SETTINGS SAVE =====
+  window.saveSetting = function(url, data, onSuccess) {
+      const token = document.querySelector('meta[name="csrf-token"]').content;
+      fetch(url, {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': token,
+              'Accept': 'application/json',
+          },
+          body: JSON.stringify(data)
+      })
+      .then(r => r.json())
+      .then(res => {
+          if (res.success) {
+              showToast(res.message || 'Tersimpan!');
+              if (onSuccess) onSuccess(res);
+          } else {
+              showToast(res.message || 'Gagal menyimpan.', true);
+          }
+      })
+      .catch(() => showToast('{{ __('messages.connection_failed') }}', true));
+  };
+
+  // ===== DYNAMIC TOPBAR HEIGHT =====
+  function syncNotifPanelPosition() {
+    const topbar = document.querySelector('.topbar');
+    const notifPanel = document.getElementById('notifPanel');
+    if (!topbar || !notifPanel) return;
+    const h = topbar.offsetHeight;
+    notifPanel.style.top    = h + 'px';
+    notifPanel.style.height = 'calc(100vh - ' + h + 'px)';
   }
+  syncNotifPanelPosition();
+  window.addEventListener('resize', syncNotifPanelPosition);
 
-  if (btnBorrow) {
-    btnBorrow.forEach(btn => {
-      btn.addEventListener('click', function() {
-        appContainer.classList.toggle('submenu-expanded');
-        if (appContainer.classList.contains('submenu-expanded') && !appContainer.classList.contains('sidebar-expanded')) {
-          appContainer.classList.add('sidebar-expanded');
-        }
+  document.addEventListener('DOMContentLoaded', function() {
+    const appContainer = document.querySelector('.app');
+    const btnSidebar = document.getElementById('btn-sidebar-toggle');
+    const btnNotif = document.querySelectorAll('.btn-notif-toggle');
+    const btnBorrow = document.querySelectorAll('.btn-borrow-toggle');
+
+    if (btnSidebar) {
+      btnSidebar.addEventListener('click', function() {
+        appContainer.classList.toggle('sidebar-expanded');
       });
-    });
-  }
+    }
 
-  if (btnNotif) {
-    btnNotif.forEach(btn => {
-      btn.addEventListener('click', function() {
-        appContainer.classList.toggle('notif-expanded');
+    if (btnBorrow) {
+      btnBorrow.forEach(btn => {
+        btn.addEventListener('click', function() {
+          appContainer.classList.toggle('submenu-expanded');
+          if (appContainer.classList.contains('submenu-expanded') && !appContainer.classList.contains('sidebar-expanded')) {
+            appContainer.classList.add('sidebar-expanded');
+          }
+        });
       });
-    });
-  }
+    }
 
-  document.querySelectorAll('a[href*="/books/"]').forEach(link => {
-    link.addEventListener('click', function(e) {
-      const isBookLink = this.classList.contains('book-link') || 
-                        this.closest('.book-card') ||
-                        this.closest('.book-grid');
-      if (isBookLink) {
-        if (!appContainer.classList.contains('sidebar-expanded')) {
-          appContainer.classList.add('sidebar-expanded');
-          if (window.innerWidth < 768) {
-            setTimeout(() => { appContainer.classList.remove('sidebar-expanded'); }, 2000);
+    if (btnNotif) {
+      btnNotif.forEach(btn => {
+        btn.addEventListener('click', function() {
+          appContainer.classList.toggle('notif-expanded');
+        });
+      });
+    }
+
+    document.querySelectorAll('a[href*="/books/"]').forEach(link => {
+      link.addEventListener('click', function(e) {
+        const isBookLink = this.classList.contains('book-link') || 
+                          this.closest('.book-card') ||
+                          this.closest('.book-grid');
+        if (isBookLink) {
+          if (!appContainer.classList.contains('sidebar-expanded')) {
+            appContainer.classList.add('sidebar-expanded');
+            if (window.innerWidth < 768) {
+              setTimeout(() => { appContainer.classList.remove('sidebar-expanded'); }, 2000);
+            }
           }
         }
-      }
+      });
     });
   });
-});
-</script>
+  </script>
 </body>
 </html>
