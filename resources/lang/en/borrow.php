@@ -14,4 +14,9 @@ return [
     'pending' => 'Pending',
     'finished_reading' => 'Finished Reading',
     'finished' => 'Finished',
+    'approved' => 'Approved',
+    'pending_request' => 'Pending Request',
+    'trust_score' => 'Trust Score',
+    'review' => 'Review',
+    'change_status' => 'Change status',
 ];

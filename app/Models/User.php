@@ -111,11 +111,73 @@ class User extends Authenticatable
     }
 
     /**
-     * Get unread notifications count
+     * Get unread notifications count (borrow requests belum dibaca + notifikasi sistem)
      */
     public function getUnreadNotificationsCountAttribute(): int
     {
-        return $this->notifications()->whereNull('read_at')->count();
+        // Hitung borrow request yang belum dibaca dan belum di-dismiss oleh pemilik buku
+        $unreadBorrowRequests = \App\Models\BorrowRequest::whereHas('book', function ($q) {
+                $q->where('user_id', $this->id);
+            })
+            ->where('read_by_owner', false)
+            ->where('dismissed_by_owner', false)
+            ->count();
+
+        // Tambah notifikasi sistem jika ada
+        $systemNotifs = 0;
+        try {
+            $systemNotifs = $this->notifications()->whereNull('read_at')->count();
+        } catch (\Exception $e) {
+            // Tabel notifications mungkin belum ada
+        }
+
+        return $unreadBorrowRequests + $systemNotifs;
+    }
+
+    /**
+     * Friend requests sent by this user
+     */
+    public function sentFriendRequests()
+    {
+        return $this->hasMany(Friend::class, 'user_id');
+    }
+
+    /**
+     * Friend requests received by this user
+     */
+    public function receivedFriendRequests()
+    {
+        return $this->hasMany(Friend::class, 'friend_id');
+    }
+
+    /**
+     * Get all accepted friends (both directions)
+     */
+    public function acceptedFriends()
+    {
+        // Friends where this user sent the request and it was accepted
+        $sentAccepted = Friend::where('user_id', $this->id)
+            ->where('status', 'accepted')
+            ->pluck('friend_id');
+
+        // Friends where this user received the request and it was accepted
+        $receivedAccepted = Friend::where('friend_id', $this->id)
+            ->where('status', 'accepted')
+            ->pluck('user_id');
+
+        $friendIds = $sentAccepted->merge($receivedAccepted)->unique();
+
+        return User::whereIn('id', $friendIds)->get();
+    }
+
+    /**
+     * Get pending friend requests count received by this user
+     */
+    public function getPendingFriendRequestsCountAttribute(): int
+    {
+        return Friend::where('friend_id', $this->id)
+            ->where('status', 'pending')
+            ->count();
     }
 
     /**

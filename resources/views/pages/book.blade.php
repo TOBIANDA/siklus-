@@ -69,7 +69,10 @@
 
   {{-- FLASH --}}
   @if(session('success'))
-  <div class="alert-success">✅ {{ session('success') }}</div>
+  <div class="alert-success" style="background:#D1FAE5;color:#065F46;display:flex;align-items:center;gap:8px;">
+    <span style="color:#10B981;font-weight:700;font-size:16px;">✓</span>
+    {{ session('success') }}
+  </div>
   @endif
 
   {{-- HERO --}}
@@ -84,11 +87,23 @@
       <h1>{{ $book->title }}</h1>
       <div class="author">{{ $book->author }}</div>
       <div class="hero-meta">
-        <span>&#128218; {{ $book->category }}</span>
-        <span>&#11088; {{ number_format($book->rating, 1) }} {{ __('book.rating') }}</span>
-        <span>&#128101; {{ $book->borrow_count }}x dipinjam</span>
+        <span>
+          <img src="{{ asset('images/chart-column-stacked.png') }}" alt="Kategori" style="width:13px;height:13px;object-fit:contain;vertical-align:middle;">
+          <span style="margin-left:4px;">{{ $book->category }}</span>
+        </span>
+        <span>
+          <img src="{{ asset('images/star.png') }}" alt="Rating" style="width:13px;height:13px;object-fit:contain;vertical-align:middle;">
+          <span style="margin-left:4px;">{{ number_format($book->rating, 1) }} {{ __('book.rating') }}</span>
+        </span>
+        <span>
+          <span style="color:var(--blue);font-weight:700;">DIPINJAM</span>
+          <span style="margin-left:4px;">{{ $book->borrow_count }}x</span>
+        </span>
         @if($book->location)
-        <span>&#128205; {{ $book->location }}</span>
+        <span>
+          <span style="color:var(--blue);font-weight:700;">LOKASI</span>
+          <span style="margin-left:4px;">{{ $book->location }}</span>
+        </span>
         @endif
       </div>
     </div>
@@ -144,15 +159,16 @@
         <div class="book-grid">
           @foreach(\App\Models\Book::where('category', $book->category)->where('id', '!=', $book->id)->limit(4)->get() as $similar)
           <div class="book-card">
-            <a href="{{ route('book.show', $similar->id) }}" style="text-decoration:none;color:inherit;">
               <img src="{{ $similar->cover_url }}" class="cover" alt="{{ $similar->title }}"
                    onerror="this.style.background='linear-gradient(135deg,#1a3a5c,#2563EB)';this.removeAttribute('src')">
               <div class="card-body">
                 <div class="card-title">{{ $similar->title }}</div>
                 <div class="card-author">{{ $similar->author }}</div>
-                <div class="card-footer"><span class="arrow-btn">&#8594;</span></div>
+                <div class="card-footer">
+                  <span style="font-size:10px;color:rgba(255,255,255,.8);font-weight:600;background:rgba(37,99,235,.7);padding:2px 6px;border-radius:4px;">{{ $similar->category }}</span>
+                </div>
               </div>
-            </a>
+              <a href="{{ route('book.show', $similar->id) }}" aria-label="{{ $similar->title }}"></a>
           </div>
           @endforeach
         </div>
@@ -176,7 +192,7 @@
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
-          <span style="font-size:12px;color:var(--yellow);">&#9733;</span>
+          <img src="{{ asset('images/star.png') }}" alt="Rating" style="width:13px;height:13px;object-fit:contain;">
           <span style="font-size:13px;font-weight:600;">{{ number_format($book->rating, 1) }} / 5.0</span>
           <span style="font-size:12px;color:var(--gray);">• {{ $book->borrow_count }}x dipinjam</span>
         </div>
@@ -226,25 +242,26 @@
         <div style="flex:1;">
           <label class="form-label">Tanggal Pinjam</label>
           <div style="display:flex;align-items:center;gap:8px;background:#F3F4F6;border:1.5px solid #E5E7EB;border-radius:10px;padding:10px 12px;">
-            <span style="font-size:16px;">&#128197;</span>
-            <input type="date" name="borrow_date"
+            <input type="date" name="borrow_date" id="borrowDate"
               style="border:none;background:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13px;flex:1;color:#374151;"
               min="{{ date('Y-m-d') }}" required>
           </div>
         </div>
-        <span style="color:#6B7280;font-weight:700;font-size:18px;padding-bottom:12px;">&#8212;</span>
+        <span style="color:#6B7280;font-weight:700;font-size:18px;padding-bottom:12px;">–</span>
         <div style="flex:1;">
           <label class="form-label">Tanggal Kembali</label>
           <div style="display:flex;align-items:center;gap:8px;background:#F3F4F6;border:1.5px solid #E5E7EB;border-radius:10px;padding:10px 12px;">
-            <span style="font-size:16px;">&#128198;</span>
-            <input type="date" name="return_date"
+            <input type="date" name="return_date" id="returnDate"
               style="border:none;background:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13px;flex:1;color:#374151;"
               min="{{ date('Y-m-d') }}" required>
           </div>
         </div>
       </div>
+      <div id="dateError" style="color:#EF4444;font-size:13px;font-weight:600;display:none;margin-top:-8px;">
+        ⚠ Tanggal kembali harus lebih besar atau sama dengan tanggal pinjam
+      </div>
 
-      <button type="submit"
+      <button type="submit" id="submitBtn"
         style="width:100%;padding:14px;background:var(--blue);color:white;border:none;
                border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;
                font-family:'DM Sans',sans-serif;margin-top:4px;transition:background .15s;"
@@ -255,5 +272,64 @@
     </form>
   </div>
 </div>
+
+<script>
+  const borrowDateInput = document.getElementById('borrowDate');
+  const returnDateInput = document.getElementById('returnDate');
+  const dateErrorDiv = document.getElementById('dateError');
+  const submitBtn = document.getElementById('submitBtn');
+  const form = borrowDateInput.closest('form');
+
+  // Sync return_date minimum with borrow_date
+  borrowDateInput.addEventListener('change', function() {
+    const borrowDate = this.value;
+    if (borrowDate) {
+      returnDateInput.min = borrowDate;
+      // Reset return_date if it's now invalid
+      if (returnDateInput.value && returnDateInput.value < borrowDate) {
+        returnDateInput.value = borrowDate;
+        validateDates();
+      }
+    }
+  });
+
+  // Validate on return_date change
+  returnDateInput.addEventListener('change', validateDates);
+
+  function validateDates() {
+    const borrowDate = borrowDateInput.value;
+    const returnDate = returnDateInput.value;
+
+    if (borrowDate && returnDate && returnDate < borrowDate) {
+      dateErrorDiv.style.display = 'block';
+      submitBtn.disabled = true;
+      submitBtn.style.opacity = '0.6';
+      submitBtn.style.cursor = 'not-allowed';
+    } else {
+      dateErrorDiv.style.display = 'none';
+      submitBtn.disabled = false;
+      submitBtn.style.opacity = '1';
+      submitBtn.style.cursor = 'pointer';
+    }
+  }
+
+  // Validate on form submit
+  form.addEventListener('submit', function(e) {
+    const borrowDate = borrowDateInput.value;
+    const returnDate = returnDateInput.value;
+
+    if (!borrowDate || !returnDate || returnDate < borrowDate) {
+      e.preventDefault();
+      dateErrorDiv.style.display = 'block';
+      submitBtn.disabled = true;
+      submitBtn.style.opacity = '0.6';
+    }
+  });
+
+  // Initialize min date for return_date
+  if (borrowDateInput.value) {
+    returnDateInput.min = borrowDateInput.value;
+  }
+</script>
 
 @endsection

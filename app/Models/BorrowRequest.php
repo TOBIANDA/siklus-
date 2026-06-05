@@ -20,12 +20,14 @@ class BorrowRequest extends Model
         'return_date',
         'status',
         'read_by_owner',
+        'dismissed_by_owner',
     ];
 
     protected $casts = [
-        'borrow_date'    => 'date',
-        'return_date'    => 'date',
-        'read_by_owner'  => 'boolean',
+        'borrow_date'         => 'date',
+        'return_date'         => 'date',
+        'read_by_owner'       => 'boolean',
+        'dismissed_by_owner'  => 'boolean',
     ];
 
     public function book()

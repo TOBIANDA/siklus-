@@ -36,18 +36,16 @@
     <div class="book-grid">
       @forelse($popularBooks as $book)
       <div class="book-card">
-        <a href="{{ route('book.show', $book->id) }}" class="book-link" style="text-decoration:none;color:inherit;">
           <img src="{{ $book->cover_url }}" class="cover" alt="{{ $book->title }}"
                onerror="this.style.background='linear-gradient(135deg,#1a3a5c,#2563EB)';this.removeAttribute('src')">
           <div class="card-body">
             <div class="card-title">{{ $book->title }}</div>
             <div class="card-author">{{ $book->author }}</div>
             <div class="card-footer">
-              <span style="font-size:11px;color:var(--blue);font-weight:600;">{{ $book->category }}</span>
-              <span class="arrow-btn">&#8594;</span>
+              <span style="font-size:10px;color:rgba(255,255,255,.8);font-weight:600;background:rgba(37,99,235,.7);padding:2px 6px;border-radius:4px;">{{ $book->category }}</span>
             </div>
           </div>
-        </a>
+          <a href="{{ route('book.show', $book->id) }}" class="book-link" aria-label="{{ $book->title }}"></a>
       </div>
       @empty
       <p style="color:var(--gray);font-size:14px;">{{ __('home.no_books_available') }}</p>
@@ -63,18 +61,18 @@
     <div class="book-grid">
       @forelse($recommendedBooks as $book)
       <div class="book-card">
-        <a href="{{ route('book.show', $book->id) }}" class="book-link" style="text-decoration:none;color:inherit;">
           <img src="{{ $book->cover_url }}" class="cover" alt="{{ $book->title }}"
                onerror="this.style.background='linear-gradient(135deg,#1a3a5c,#2563EB)';this.removeAttribute('src')">
           <div class="card-body">
             <div class="card-title">{{ $book->title }}</div>
             <div class="card-author">{{ $book->author }}</div>
             <div class="card-footer">
-              <span style="font-size:11px;color:var(--yellow);font-weight:600;">⭐ {{ number_format($book->rating,1) }}</span>
-              <span class="arrow-btn">&#8594;</span>
+              <span style="font-size:10px;color:#FDE68A;font-weight:700;display:flex;align-items:center;gap:3px;">
+                <img src="{{ asset('images/star.png') }}" alt="Rating" style="width:11px;height:11px;object-fit:contain;"> {{ number_format($book->rating,1) }}
+              </span>
             </div>
           </div>
-        </a>
+          <a href="{{ route('book.show', $book->id) }}" class="book-link" aria-label="{{ $book->title }}"></a>
       </div>
       @empty
       <p style="color:var(--gray);font-size:14px;">{{ __('home.no_recommendations') }}</p>

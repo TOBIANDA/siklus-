@@ -125,40 +125,81 @@
     padding: 12px 18px; font-size: 14px; font-weight: 600;
     margin-bottom: 20px; display: flex; align-items: center; gap: 8px;
 }
+
+/* ===== INLINE VALIDATION ===== */
+.lent-input.field-error {
+    border-color: #EF4444 !important;
+    background: #FFF5F5 !important;
+    box-shadow: 0 0 0 3px rgba(239,68,68,.12) !important;
+    animation: lent-shake .3s ease;
+}
+@keyframes lent-shake {
+    0%,100% { transform: translateX(0); }
+    25%     { transform: translateX(-5px); }
+    75%     { transform: translateX(5px); }
+}
+.lent-field-error-msg {
+    font-size: 12px; color: #DC2626; font-weight: 600;
+    margin-top: 4px; display: none;
+    align-items: center; gap: 4px;
+}
+.lent-field-error-msg.show { display: flex; }
 </style>
 
 <div style="padding:24px;">
 
     {{-- TOP BAR --}}
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-        <div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:36px;height:36px;background:linear-gradient(135deg,#2563EB,#1D4ED8);border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(37,99,235,.3);">
+                <span style="font-size:16px;">📚</span>
+            </div>
+            <span style="font-size:20px;font-weight:800;color:var(--dark);">{{ __('lent.lent_books') }}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
             <div class="borrow-tabs">
-                <a href="{{ route('borrow') }}" class="borrow-tab" style="text-decoration:none;">{{ __('lent.borrowed_books') }}</a>
+                <a href="{{ route('borrow') }}" class="borrow-tab">{{ __('lent.borrowed_books') }}</a>
                 <span class="borrow-tab active" style="cursor:default;">{{ __('lent.lent_books') }}</span>
             </div>
-            <p style="font-size:12px; color:var(--gray); margin-top:6px;">{{ __('lent.description') }}</p>
+            <a href="{{ route('lent.create') }}" class="add-btn" style="text-decoration:none;" title="{{ __('lent.upload_new_book') }}">+</a>
         </div>
-        <a href="{{ route('lent.create') }}" class="add-btn" style="text-decoration:none;" title="Upload buku baru">+</a>
     </div>
 
     {{-- FLASH --}}
     @if(session('success'))
-    <div class="alert-success">✅ {{ session('success') }}</div>
+    <div style="background:#D1FAE5;color:#065F46;border-radius:10px;padding:12px 18px;font-size:14px;font-weight:600;margin-bottom:20px;display:flex;align-items:center;gap:8px;border-left:4px solid #10B981;">
+        <span style="color:#10B981;font-weight:700;">✓</span> {{ session('success') }}
+    </div>
     @endif
 
-    {{-- STATS STRIP --}}
-    <div class="borrow-stats" style="margin-bottom:28px;">
+    {{-- STATS --}}
+    <div class="borrow-stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:28px;">
         <div class="borrow-stat">
-            <div class="si"><img src="{{ asset('images/icon_closed_book.png') }}" alt="" style="width:28px;height:28px;object-fit:contain;"></div>
-            <div class="sl">{{ $stats['books_loaned'] }} {{ __('lent.books_loaned') }}</div>
+            <div class="borrow-stat-left">
+                <div class="borrow-stat-label">{{ __('lent.books_loaned') }}</div>
+                <div class="borrow-stat-value">{{ $stats['books_loaned'] }}</div>
+            </div>
+            <div class="borrow-stat-icon" style="background:#EFF6FF;">
+                <img src="{{ asset('images/solar_book-broken.png') }}" alt="Books Loaned" style="width:24px;height:24px;object-fit:contain;">
+            </div>
         </div>
         <div class="borrow-stat">
-            <div class="si"><img src="{{ asset('images/icon_books_open.png') }}" alt="" style="width:28px;height:28px;object-fit:contain;"></div>
-            <div class="sl">{{ $stats['on_loan'] }} {{ __('lent.on_loan') }}</div>
+            <div class="borrow-stat-left">
+                <div class="borrow-stat-label">{{ __('lent.on_loan') }}</div>
+                <div class="borrow-stat-value">{{ $stats['on_loan'] }}</div>
+            </div>
+            <div class="borrow-stat-icon" style="background:#FFF7ED;">
+                <img src="{{ asset('images/Group 207.png') }}" alt="On Loan" style="width:24px;height:24px;object-fit:contain;">
+            </div>
         </div>
         <div class="borrow-stat">
-            <div class="si"><img src="{{ asset('images/icon_clipboard.png') }}" alt="" style="width:28px;height:28px;object-fit:contain;"></div>
-            <div class="sl">{{ $stats['pending'] }} {{ __('common.status') }}</div>
+            <div class="borrow-stat-left">
+                <div class="borrow-stat-label">Pending Request</div>
+                <div class="borrow-stat-value">{{ $stats['pending'] }}</div>
+            </div>
+            <div class="borrow-stat-icon" style="background:#ECFDF5;">
+                <img src="{{ asset('images/Group 206.png') }}" alt="Pending" style="width:24px;height:24px;object-fit:contain;">
+            </div>
         </div>
     </div>
 
@@ -166,27 +207,45 @@
     @php $onLoanCount = count(array_filter($items, fn($item) => $item['book_status'] === 'on_loan')); @endphp
     @if($onLoanCount > 0)
     <div class="bsection-title">{{ __('lent.on_loan') }}</div>
-    <div class="borrow-cards">
+    <div class="borrow-cards" id="lent-section-onloan">
       @foreach($items as $item)
         @if($item['book_status'] === 'on_loan')
-        <div class="borrow-card">
+        <div class="borrow-card" data-item-id="{{ $item['id'] ?? '' }}" data-book-id="{{ $item['book_id'] ?? '' }}">
           <div class="bc-cover">
-            <img src="{{ asset('images/' . $item['cover']) }}" style="width:100%;height:100%;object-fit:cover;" onerror="this.outerHTML='&#128218;'">
+            <img src="{{ asset('images/' . $item['cover']) }}" alt="{{ $item['title'] }}"
+                 onerror="this.outerHTML='📚'">
           </div>
           <div class="bc-info">
             <div class="bc-title">{{ $item['title'] }}</div>
             <div class="bc-author">{{ $item['author'] }}</div>
-            <div class="date-row">&#128197; {{ $item['borrow_date'] ?? 'N/A' }}</div>
-            <div class="date-row">&#128198; {{ $item['return_date'] ?? 'N/A' }}</div>
+            <div class="date-row">📅 {{ $item['borrow_date'] ?? 'N/A' }}</div>
+            <div class="date-row">🔁 {{ $item['return_date'] ?? 'N/A' }}</div>
             <div class="msg-lender">
               <div class="lender-i">
                 <div class="lender-av"></div>
-                <span style="color:var(--gray);text-decoration:none;font-size:12px;">{{ $item['borrower_name'] ?? 'Borrower' }}</span>
+                <span>{{ $item['borrower_name'] ?? 'Borrower' }}</span>
               </div>
-              <span style="font-size:16px;color:var(--gray);cursor:pointer">&#9992;</span>
+              <a href="{{ route('messages') }}" class="lender-msg-btn" title="Pesan">✈</a>
             </div>
           </div>
-          <span class="status-b s-onread">{{ __('lent.on_loan') }}</span>
+          {{-- STATUS PICKER (lender dapat ubah manual) --}}
+          <div class="status-picker-wrap" style="position:relative;flex-shrink:0;align-self:center;">
+            <button type="button"
+                    class="status-b s-onread status-picker-trigger"
+                    data-book-id="{{ $item['book_id'] ?? $item['id'] }}"
+                    data-request-id="{{ $item['request_id'] ?? '' }}"
+                    aria-haspopup="listbox"
+                    aria-expanded="false"
+                    title="Ubah status">
+              <span class="status-picker-label">{{ __('lent.on_loan') }}</span>
+              <span class="status-picker-chevron" aria-hidden="true">▾</span>
+            </button>
+            <div class="status-picker-menu" role="listbox" hidden>
+              <button type="button" class="status-opt s-onread" data-status="on_loan" role="option">{{ __('lent.on_loan') }}</button>
+              <button type="button" class="status-opt s-finish" data-status="returned" role="option">Dikembalikan</button>
+              <button type="button" class="status-opt s-available" data-status="available" role="option">Tersedia</button>
+            </div>
+          </div>
         </div>
         @endif
       @endforeach
@@ -202,15 +261,15 @@
         @if($item['pending_count'] > 0)
         <div class="borrow-card">
           <div class="bc-cover">
-            <img src="{{ asset('images/' . $item['cover']) }}" style="width:100%;height:100%;object-fit:cover;" onerror="this.outerHTML='&#128218;'">
+            <img src="{{ asset('images/' . $item['cover']) }}" alt="{{ $item['title'] }}"
+                 onerror="this.outerHTML='📚'">
           </div>
           <div class="bc-info">
             <div class="bc-title">{{ $item['title'] }}</div>
             <div class="bc-author">{{ $item['author'] }}</div>
-            <div class="date-row">📚 {{ $item['pending_count'] }} {{ __('lent.pending_request_count') }}</div>
+            <div class="date-row">🔔 {{ $item['pending_count'] }} {{ __('lent.pending_request_count') }}</div>
             <div class="msg-lender">
-              <a href="{{ route('messages') }}" style="color:var(--blue);text-decoration:none;font-size:12px;font-weight:600;">{{ __('lent.view_requests') }} →</a>
-              <span style="font-size:16px;color:var(--gray);cursor:pointer">&#9992;</span>
+              <a href="{{ route('messages') }}" style="color:var(--blue);text-decoration:none;font-size:11px;font-weight:600;">{{ __('lent.view_requests') }} →</a>
             </div>
           </div>
           <span class="status-b s-appeal">{{ __('messages.pending') }}</span>
@@ -229,15 +288,15 @@
         @if($item['book_status'] !== 'on_loan' && $item['pending_count'] === 0)
         <div class="borrow-card">
           <div class="bc-cover">
-            <img src="{{ asset('images/' . $item['cover']) }}" style="width:100%;height:100%;object-fit:cover;" onerror="this.outerHTML='&#128218;'">
+            <img src="{{ asset('images/' . $item['cover']) }}" alt="{{ $item['title'] }}"
+                 onerror="this.outerHTML='📚'">
           </div>
           <div class="bc-info">
             <div class="bc-title">{{ $item['title'] }}</div>
             <div class="bc-author">{{ $item['author'] }}</div>
-            <div class="date-row">✅ {{ __('lent.available') }}</div>
+            <div class="date-row">✓ {{ __('lent.available') }}</div>
             <div class="msg-lender">
-              <span style="color:var(--gray);text-decoration:none;font-size:12px;">{{ __('lent.ready_to_share') }}</span>
-              <span style="font-size:16px;color:var(--gray);cursor:pointer">&#9992;</span>
+              <span style="color:var(--gray);font-size:11px;">{{ __('lent.ready_to_share') }}</span>
             </div>
           </div>
           <span class="status-b s-finish">{{ __('lent.available') }}</span>
@@ -250,13 +309,12 @@
     {{-- ===== KATALOG SEMUA BUKU SAYA ===== --}}
     <div style="margin-top:32px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-            <div class="bsection-title" style="margin-bottom:0;">📚 Katalog Buku Saya</div>
+            <div class="bsection-title" style="margin-bottom:0;">Katalog Buku Saya</div>
             <span style="font-size:12px;color:var(--gray);">{{ $books->count() }} buku terdaftar</span>
         </div>
 
         @if($books->isEmpty())
         <div class="empty-state">
-            <div class="el">📭</div>
             <p>Belum ada buku di katalog</p>
             <small>Klik tombol <strong>+</strong> di atas untuk menambahkan buku pertamamu</small>
         </div>
@@ -272,19 +330,25 @@
                     <div class="catalog-title">{{ $book->title }}</div>
                     <div class="catalog-author">{{ $book->author }}</div>
                     <div class="catalog-meta">
-                        <span class="catalog-category">{{ $book->category }}</span>
+                        <span class="catalog-category" style="display:flex;align-items:center;gap:4px;">
+                            <img src="{{ asset('images/chart-column-stacked.png') }}" alt="Genre" style="width:11px;height:11px;object-fit:contain;">
+                            {{ $book->category }}
+                        </span>
                         @if($book->location)
-                        <span class="catalog-location">📍 {{ $book->location }}</span>
+                        <span class="catalog-location">{{ $book->location }}</span>
                         @endif
                     </div>
                     <div style="margin-bottom:10px;">
-                        <span class="book-status-badge {{ $book->book_status === 'on_loan' ? 'status-on-loan' : 'status-available' }}">
-                            {{ $book->book_status === 'on_loan' ? '📤 Sedang Dipinjam' : '✅ Tersedia' }}
-                        </span>
+                        <label style="font-size:11px;font-weight:700;color:var(--gray);margin-bottom:4px;display:block;text-transform:uppercase;letter-spacing:.06em;">Status</label>
+                        <select class="status-selector" data-book-id="{{ $book->id }}" style="width:100%;padding:8px 10px;border:1.5px solid var(--gray-border);background:var(--gray-light);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--dark);outline:none;cursor:pointer;transition:border-color .15s;">
+                            <option value="available" {{ $book->book_status === 'available' ? 'selected' : '' }}>Tersedia</option>
+                            <option value="on_loan" {{ $book->book_status === 'on_loan' ? 'selected' : '' }}>Sedang Dipinjam</option>
+                            <option value="returned" {{ $book->book_status === 'returned' ? 'selected' : '' }}>Sudah Dikembalikan</option>
+                        </select>
                     </div>
                     <div class="catalog-actions">
-                        <a href="#modal-edit-{{ $book->id }}" class="edit-btn">✏️ Edit</a>
-                        <a href="#modal-del-{{ $book->id }}" class="del-btn">🗑 Hapus</a>
+                        <a href="#modal-edit-{{ $book->id }}" class="edit-btn">Edit</a>
+                        <a href="#modal-del-{{ $book->id }}" class="del-btn">Hapus</a>
                     </div>
                 </div>
             </div>
@@ -301,23 +365,25 @@
 <div id="modal-create" class="modal-overlay">
     <a href="#" style="position:absolute;inset:0;z-index:0;display:block;"></a>
     <div class="modal-box" style="z-index:1;">
-        <a href="#" class="modal-close" title="{{ __('common.close') }}">&#10005;</a>
-        <div style="font-size:20px; font-weight:700; margin-bottom:20px; text-align:center;">📖 {{ __('lent.upload_new_book') }}</div>
+        <a href="#" class="modal-close" title="{{ __('common.close') }}">×</a>
+        <div style="font-size:20px; font-weight:700; margin-bottom:20px; text-align:center;">{{ __('lent.upload_new_book') }}</div>
 
         <form action="{{ route('lent.store') }}" method="POST" enctype="multipart/form-data" class="lent-form" id="form-create-book">
             @csrf
             <div>
                 <label>{{ __('lent.title') }}</label>
-                <input type="text" name="title" class="lent-input" placeholder="The Little Prince" required>
+                <input type="text" name="title" id="create-title" class="lent-input" placeholder="The Little Prince">
+                <div class="lent-field-error-msg" id="create-title-err">Judul buku wajib diisi</div>
             </div>
             <div>
                 <label>{{ __('lent.author') }}</label>
-                <input type="text" name="author" class="lent-input" placeholder="Antoine de Saint-Exupéry" required>
+                <input type="text" name="author" id="create-author" class="lent-input" placeholder="Antoine de Saint-Exupéry">
+                <div class="lent-field-error-msg" id="create-author-err">Nama penulis wajib diisi</div>
             </div>
             <div class="lent-input-row">
                 <div>
                     <label>{{ __('lent.category') }}</label>
-                    <select name="category" class="lent-input" required>
+                    <select name="category" id="create-category" class="lent-input">
                         <option value="">-- {{ __('common.select') }} --</option>
                         <option value="Fiksi">Fiksi</option>
                         <option value="Non-Fiksi">Non-Fiksi</option>
@@ -327,6 +393,7 @@
                         <option value="Pengembangan Diri">Pengembangan Diri</option>
                         <option value="Umum">Umum</option>
                     </select>
+                    <div class="lent-field-error-msg" id="create-category-err">Kategori wajib dipilih</div>
                 </div>
                 <div>
                     <label>{{ __('lent.location') }}</label>
@@ -339,7 +406,7 @@
             </div>
             <div>
                 <label>{{ __('lent.cover_optional') }}</label>
-                <input type="file" name="cover" class="lent-input" accept="image/*">
+                <input type="file" name="cover" class="lent-input" accept="image/jpeg,image/png,image/webp,image/jpg">
             </div>
             <div class="lent-btn-row">
                 <a href="#" class="lent-cancel">{{ __('common.cancel') }}</a>
@@ -441,13 +508,61 @@
         window.location.hash = 'modal-create';
     @endif
 
+    // ===== Validation helpers =====
+    function showErr(inputEl, msgEl, msg) {
+        if (inputEl) inputEl.classList.add('field-error');
+        if (msgEl) { msgEl.textContent = msg; msgEl.classList.add('show'); }
+    }
+    function clearErr(inputEl, msgEl) {
+        if (inputEl) inputEl.classList.remove('field-error');
+        if (msgEl) msgEl.classList.remove('show');
+    }
+
+    // Clear errors on input
+    [['create-title','create-title-err'],['create-author','create-author-err'],['create-category','create-category-err']]
+        .forEach(([id, errId]) => {
+            const el = document.getElementById(id);
+            const errEl = document.getElementById(errId);
+            if (el) {
+                el.addEventListener('input',  () => clearErr(el, errEl));
+                el.addEventListener('change', () => clearErr(el, errEl));
+            }
+        });
+
+    function validateCreateForm() {
+        let valid = true;
+        const title    = document.getElementById('create-title');
+        const author   = document.getElementById('create-author');
+        const category = document.getElementById('create-category');
+        const titleErr    = document.getElementById('create-title-err');
+        const authorErr   = document.getElementById('create-author-err');
+        const categoryErr = document.getElementById('create-category-err');
+
+        if (!title || !title.value.trim()) {
+            showErr(title, titleErr, 'Judul buku wajib diisi'); valid = false;
+        } else { clearErr(title, titleErr); }
+
+        if (!author || !author.value.trim()) {
+            showErr(author, authorErr, 'Nama penulis wajib diisi'); valid = false;
+        } else { clearErr(author, authorErr); }
+
+        if (!category || !category.value) {
+            showErr(category, categoryErr, 'Kategori wajib dipilih'); valid = false;
+        } else { clearErr(category, categoryErr); }
+
+        return valid;
+    }
+
     form.addEventListener('submit', async function (e) {
         e.preventDefault();
+
+        // Client-side validation
+        if (!validateCreateForm()) return;
 
         const submitBtn = form.querySelector('button[type="submit"]');
         const origText  = submitBtn.textContent;
         submitBtn.disabled    = true;
-        submitBtn.textContent = '⏳ Menyimpan...';
+        submitBtn.textContent = 'Menyimpan...';
 
         const formData = new FormData(form);
 
@@ -490,7 +605,7 @@
                                 ${book.location ? `<span class="catalog-location">📍 ${escHtml(book.location)}</span>` : ''}
                             </div>
                             <div style="margin-bottom:10px;">
-                                <span class="book-status-badge status-available">✅ Tersedia</span>
+                                <span class="book-status-badge status-available">Tersedia</span>
                             </div>
                             <div class="catalog-actions">
                                 <span class="edit-btn" style="cursor:default;opacity:.5;">✏️ Edit</span>
@@ -506,9 +621,17 @@
                 if (window.showToast) showToast(data.message);
 
             } else {
-                // Validasi error
+                // Show server validation errors
+                if (data.errors) {
+                    const title    = document.getElementById('create-title');
+                    const author   = document.getElementById('create-author');
+                    const category = document.getElementById('create-category');
+                    if (data.errors.title)    showErr(title,    document.getElementById('create-title-err'),    data.errors.title[0]);
+                    if (data.errors.author)   showErr(author,   document.getElementById('create-author-err'),   data.errors.author[0]);
+                    if (data.errors.category) showErr(category, document.getElementById('create-category-err'), data.errors.category[0]);
+                }
                 const errors = data.errors
-                    ? Object.values(data.errors).flat().join('\n')
+                    ? Object.values(data.errors).flat().join(', ')
                     : (data.message || 'Terjadi kesalahan.');
                 if (window.showToast) showToast(errors, true);
             }
@@ -522,10 +645,151 @@
         }
     });
 
+    // ===== Status Selector Handler =====
+    const statusSelectors = document.querySelectorAll('.status-selector');
+    statusSelectors.forEach(selector => {
+        selector.addEventListener('change', async function() {
+            const bookId = this.dataset.bookId;
+            const newStatus = this.value;
+            
+            try {
+                const response = await fetch(`/lent/${bookId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                    },
+                    body: JSON.stringify({ book_status: newStatus })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    // Optionally show a success message
+                    console.log('Status updated:', data.book_status);
+                } else {
+                    console.error('Failed to update status');
+                    // Revert the selection
+                    location.reload();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                location.reload();
+            }
+        });
+    });
+
     function escHtml(str) {
         return String(str ?? '')
             .replace(/&/g, '&amp;').replace(/</g, '&lt;')
             .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+})();
+</script>
+
+{{-- ================================================================
+     STATUS PICKER — On Loan cards (Lender dapat ubah manual)
+================================================================ --}}
+<script>
+(function () {
+    'use strict';
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+
+    // CSS untuk status available
+    const style = document.createElement('style');
+    style.textContent = '.s-available { background: #D1FAE5; color: #065F46; }';
+    document.head.appendChild(style);
+
+    function closeAllPickers(except) {
+        document.querySelectorAll('.status-picker-wrap.open').forEach(wrap => {
+            if (wrap !== except) {
+                wrap.classList.remove('open');
+                const menu = wrap.querySelector('.status-picker-menu');
+                const trigger = wrap.querySelector('.status-picker-trigger');
+                if (menu) menu.hidden = true;
+                if (trigger) trigger.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+
+    document.addEventListener('click', function (e) {
+        const trigger = e.target.closest('.status-picker-trigger');
+        const option  = e.target.closest('.status-opt');
+
+        if (trigger) {
+            e.stopPropagation();
+            const wrap = trigger.closest('.status-picker-wrap');
+            const menu = wrap.querySelector('.status-picker-menu');
+            const isOpen = wrap.classList.contains('open');
+            closeAllPickers();
+            if (!isOpen) {
+                wrap.classList.add('open');
+                menu.hidden = false;
+                trigger.setAttribute('aria-expanded', 'true');
+            }
+            return;
+        }
+
+        if (option) {
+            e.stopPropagation();
+            const wrap    = option.closest('.status-picker-wrap');
+            const trigger = wrap.querySelector('.status-picker-trigger');
+            const bookId  = trigger.dataset.bookId;
+            const newStatus = option.dataset.status;
+            updateBookStatus(bookId, newStatus, wrap, option);
+            closeAllPickers();
+            return;
+        }
+
+        closeAllPickers();
+    });
+
+    const statusMap = {
+        on_loan:   { cls: 's-onread',   label: 'Sedang Dipinjam' },
+        returned:  { cls: 's-finish',   label: 'Dikembalikan' },
+        available: { cls: 's-available', label: 'Tersedia' },
+    };
+
+    async function updateBookStatus(bookId, newStatus, wrap, optionEl) {
+        const trigger = wrap.querySelector('.status-picker-trigger');
+        const card    = wrap.closest('.borrow-card');
+
+        try {
+            const response = await fetch(`/lent/${bookId}/status`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({ book_status: newStatus }),
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                if (window.showToast) showToast(data.message || 'Gagal mengubah status.', true);
+                return;
+            }
+
+            // Update tampilan badge
+            const mapped = statusMap[newStatus] || { cls: 's-finish', label: newStatus };
+            trigger.className = `status-b ${mapped.cls} status-picker-trigger`;
+            trigger.querySelector('.status-picker-label').textContent = mapped.label;
+
+            // Jika dikembalikan atau tersedia, pindahkan card ke section finished
+            if (newStatus === 'returned' || newStatus === 'available') {
+                const finishedSection = document.querySelector('.borrow-cards:last-of-type');
+                if (finishedSection && card.parentElement !== finishedSection) {
+                    card.parentElement.removeChild(card);
+                    finishedSection.prepend(card);
+                }
+            }
+
+            if (window.showToast) showToast('Status buku diperbarui.');
+        } catch (err) {
+            console.error(err);
+            if (window.showToast) showToast('Gagal terhubung ke server.', true);
+        }
     }
 })();
 </script>

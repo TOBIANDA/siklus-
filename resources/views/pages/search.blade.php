@@ -5,14 +5,14 @@
 
     {{-- ===== HEADER ===== --}}
     <div class="ls-header">
-        <h1 class="ls-title">🔍 Cari Buku</h1>
+        <h1 class="ls-title"><span style="color:var(--blue);">⬊</span> Cari Buku</h1>
         <p class="ls-subtitle">Temukan buku berdasarkan judul, penulis, atau kategori</p>
     </div>
 
     {{-- ===== SEARCH BAR ===== --}}
     <div class="ls-search-wrap">
         <div class="ls-search-box" id="searchBox">
-            <span class="ls-search-icon">🔍</span>
+            <span class="ls-search-icon" style="color:var(--blue);">🔍</span>
             <input
                 type="text"
                 id="liveSearchInput"

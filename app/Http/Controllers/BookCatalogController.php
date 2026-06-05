@@ -223,6 +223,33 @@ class BookCatalogController extends Controller
     }
 
     /**
+     * Update book status manually.
+     */
+    public function updateStatus(Request $request, Book $book)
+    {
+        // Authorization check - ensure user owns this book
+        if ($book->user_id !== Auth::id()) {
+            return redirect()->route('lent')->with('error', 'Unauthorized');
+        }
+
+        $validated = $request->validate([
+            'book_status' => 'required|in:available,on_loan,returned',
+        ]);
+
+        $book->update($validated);
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Status buku berhasil diperbarui!',
+                'book_status' => $book->book_status,
+            ]);
+        }
+
+        return redirect()->route('lent')->with('success', 'Status buku berhasil diperbarui!');
+    }
+
+    /**
      * Delete a book from the catalog.
      */
     public function destroy(Book $book)

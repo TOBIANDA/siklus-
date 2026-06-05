@@ -8,6 +8,7 @@ return [
     'borrow' => 'Borrow',
     'lent' => 'Lent',
     'messages' => 'Messages',
+    'friends' => 'Friends',
     'settings' => 'Settings',
     'profile' => 'Profile',
     'logout' => 'Logout',

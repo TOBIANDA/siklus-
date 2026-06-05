@@ -125,6 +125,29 @@
             margin-bottom: 4px;
         }
 
+        .inline-error {
+            color: #ff6b6b;
+            font-size: 13px;
+            margin-top: 4px;
+            display: none;
+            align-items: center;
+            gap: 5px;
+        }
+        .inline-error.show { display: flex; }
+
+        .input-error {
+            border: 2px solid #ff6b6b !important;
+            background-color: #fff0f0 !important;
+            animation: shake .35s ease;
+        }
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            20%      { transform: translateX(-6px); }
+            40%      { transform: translateX(6px); }
+            60%      { transform: translateX(-4px); }
+            80%      { transform: translateX(4px); }
+        }
+
         button {
             background-color: #6b70ff;
             color: white;
@@ -169,7 +192,7 @@
 </head>
 <body>
     <div class="overlay"></div>
-    <img src="{{ asset('images/siklus.png') }}" alt="Siklus Logo" class="logo">
+    <img src="{{ asset('images/sikklus.png') }}" alt="Siklus Logo" class="logo">
 
     <div class="login-container">
         <h2>Log In</h2>
@@ -184,15 +207,19 @@
             <div class="success-message">{{ session('success') }}</div>
         @endif
 
-        <form action="{{ route('login.submit') }}" method="POST">
+        <form action="{{ route('login.submit') }}" method="POST" id="loginForm" novalidate>
             @csrf
-            <input type="email" name="email" placeholder="Email" value="{{ old('email') }}" required>
+            <div>
+                <input type="email" name="email" id="loginEmail" placeholder="Email" value="{{ old('email') }}" autocomplete="email">
+                <p class="inline-error" id="emailError">⚠ Email tidak boleh kosong</p>
+            </div>
             <div class="password-wrapper">
-                <input type="password" name="password" placeholder="Password" id="password" required>
+                <input type="password" name="password" placeholder="Password" id="password" autocomplete="current-password">
                 <span class="password-toggle-icon" id="togglePassword" style="display: flex; align-items: center; justify-content: center; height: 100%;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#777" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                 </span>
             </div>
+            <p class="inline-error" id="passwordError">⚠ Password tidak boleh kosong</p>
             <button type="submit">Log in</button>
         </form>
 
@@ -210,14 +237,53 @@
             togglePassword.addEventListener('click', function (e) {
                 const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
                 password.setAttribute('type', type);
-
-                if (password.getAttribute('type') === 'text') {
-                    this.innerHTML = eyeClosed;
-                } else {
-                    this.innerHTML = eyeOpen;
-                }
+                this.innerHTML = password.getAttribute('type') === 'text' ? eyeClosed : eyeOpen;
             });
         }
+
+        // ===== CLIENT-SIDE VALIDATION =====
+        const loginForm   = document.getElementById('loginForm');
+        const emailInput  = document.getElementById('loginEmail');
+        const pwdInput    = document.getElementById('password');
+        const emailError  = document.getElementById('emailError');
+        const pwdError    = document.getElementById('passwordError');
+
+        function setError(input, errorEl, msg) {
+            input.classList.add('input-error');
+            errorEl.textContent = '⚠ ' + msg;
+            errorEl.classList.add('show');
+        }
+        function clearError(input, errorEl) {
+            input.classList.remove('input-error');
+            errorEl.classList.remove('show');
+        }
+
+        // Clear on type
+        emailInput.addEventListener('input', () => clearError(emailInput, emailError));
+        pwdInput.addEventListener('input',   () => clearError(pwdInput, pwdError));
+
+        loginForm.addEventListener('submit', function (e) {
+            let valid = true;
+
+            if (!emailInput.value.trim()) {
+                setError(emailInput, emailError, 'Email tidak boleh kosong');
+                valid = false;
+            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.trim())) {
+                setError(emailInput, emailError, 'Format email tidak valid');
+                valid = false;
+            } else {
+                clearError(emailInput, emailError);
+            }
+
+            if (!pwdInput.value) {
+                setError(pwdInput, pwdError, 'Password tidak boleh kosong');
+                valid = false;
+            } else {
+                clearError(pwdInput, pwdError);
+            }
+
+            if (!valid) e.preventDefault();
+        });
     </script>
 </body>
 </html>

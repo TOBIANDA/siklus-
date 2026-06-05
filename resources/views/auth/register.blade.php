@@ -174,6 +174,29 @@
             margin-bottom: 4px;
         }
 
+        .input-error {
+            border: 2px solid #ff6b6b !important;
+            background-color: #fff0f0 !important;
+            animation: shake .35s ease;
+        }
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            20%      { transform: translateX(-6px); }
+            40%      { transform: translateX(6px); }
+            60%      { transform: translateX(-4px); }
+            80%      { transform: translateX(4px); }
+        }
+        .inline-error {
+            color: #ff6b6b;
+            font-size: 13px;
+            margin-top: 4px;
+            margin-bottom: 0;
+            display: none;
+            align-items: center;
+            gap: 4px;
+        }
+        .inline-error.show { display: flex; }
+
         button {
             background-color: #6b70ff;
             color: white;
@@ -220,28 +243,36 @@
             @endforeach
         @endif
 
-        <form action="{{ route('register.submit') }}" method="POST">
+        <form action="{{ route('register.submit') }}" method="POST" id="registerForm" novalidate>
             @csrf
-            <input type="text" name="name" placeholder="Name" value="{{ old('name') }}" required>
-            <input type="email" name="email" placeholder="Email" value="{{ old('email') }}" required>
+            <div>
+                <input type="text" name="name" id="regName" placeholder="Name" value="{{ old('name') }}">
+                <p class="inline-error" id="nameError">⚠ Nama tidak boleh kosong</p>
+            </div>
+            <div>
+                <input type="email" name="email" id="regEmail" placeholder="Email" value="{{ old('email') }}">
+                <p class="inline-error" id="emailInlineError">⚠ Email tidak boleh kosong</p>
+            </div>
             <div class="error-message" id="emailWarning" style="display:none; margin-top: -4px;">Email harus memiliki domain yang valid (contoh: .com, .id, .co.id)</div>
 
             <div class="password-wrapper">
-                <input type="password" name="password" placeholder="Password" id="password" required>
+                <input type="password" name="password" placeholder="Password" id="password">
                 <span class="password-toggle-icon" id="togglePassword" style="display: flex; align-items: center; justify-content: center; height: 100%;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#777" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                 </span>
             </div>
+            <p class="inline-error" id="passwordError">⚠ Password tidak boleh kosong</p>
 
             <div class="password-wrapper">
-                <input type="password" name="password_confirmation" placeholder="Confirm Password" id="password_confirmation" required>
+                <input type="password" name="password_confirmation" placeholder="Confirm Password" id="password_confirmation">
                 <span class="password-toggle-icon" id="togglePasswordConfirm" style="display: flex; align-items: center; justify-content: center; height: 100%;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#777" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                 </span>
             </div>
+            <p class="inline-error" id="confirmError">⚠ Konfirmasi password tidak boleh kosong</p>
 
             <div class="row">
-                <select name="province" required>
+                <select name="province" id="regProvince" required>
                     <option value="" disabled selected>Province</option>
                     <option value="Jawa Barat">Jawa Barat</option>
                     <option value="Jawa Tengah">Jawa Tengah</option>
@@ -269,13 +300,15 @@
                     <option value="Papua Barat">Papua Barat</option>
                     <option value="Papua">Papua</option>
                 </select>
-                <input type="text" name="city" placeholder="City" value="{{ old('city') }}" required>
+                <input type="text" name="city" id="regCity" placeholder="City" value="{{ old('city') }}">
             </div>
+            <p class="inline-error" id="locationError" style="margin-top:4px;">⚠ Provinsi dan kota wajib diisi</p>
 
             <div class="checkbox-container">
-                <input type="checkbox" id="terms" name="terms" required>
-                <label for="terms">I agree to the <a href="#">Terms & Conditions</a></label>
+                <input type="checkbox" id="terms" name="terms">
+                <label for="terms">I agree to the <a href="#">Terms &amp; Conditions</a></label>
             </div>
+            <p class="inline-error" id="termsError">⚠ Anda harus menyetujui syarat dan ketentuan</p>
 
             <button type="submit">Create Account</button>
         </form>
@@ -333,6 +366,104 @@
                 }
             });
         }
+
+        // ===== CLIENT-SIDE VALIDATION =====
+        function setError(inputEl, errorEl, msg) {
+            if (inputEl) inputEl.classList.add('input-error');
+            if (errorEl) { errorEl.textContent = '⚠ ' + msg; errorEl.classList.add('show'); }
+        }
+        function clearError(inputEl, errorEl) {
+            if (inputEl) inputEl.classList.remove('input-error');
+            if (errorEl) errorEl.classList.remove('show');
+        }
+
+        // Clear on input
+        const fieldMap = [
+            { input: document.getElementById('regName'),     error: document.getElementById('nameError') },
+            { input: document.getElementById('regEmail'),    error: document.getElementById('emailInlineError') },
+            { input: document.getElementById('password'),    error: document.getElementById('passwordError') },
+            { input: document.getElementById('password_confirmation'), error: document.getElementById('confirmError') },
+            { input: document.getElementById('regCity'),     error: document.getElementById('locationError') },
+            { input: document.getElementById('regProvince'), error: document.getElementById('locationError') },
+        ];
+        fieldMap.forEach(({ input, error }) => {
+            if (input) input.addEventListener('input', () => clearError(input, error));
+            if (input) input.addEventListener('change', () => clearError(input, error));
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', function (e) {
+            let valid = true;
+
+            const name     = document.getElementById('regName');
+            const email    = document.getElementById('regEmail');
+            const pwd      = document.getElementById('password');
+            const pwdConf  = document.getElementById('password_confirmation');
+            const province = document.getElementById('regProvince');
+            const city     = document.getElementById('regCity');
+            const terms    = document.getElementById('terms');
+
+            const nameErr     = document.getElementById('nameError');
+            const emailErr    = document.getElementById('emailInlineError');
+            const pwdErr      = document.getElementById('passwordError');
+            const confirmErr  = document.getElementById('confirmError');
+            const locationErr = document.getElementById('locationError');
+            const termsErr    = document.getElementById('termsError');
+
+            // Name
+            if (!name.value.trim()) {
+                setError(name, nameErr, 'Nama tidak boleh kosong');
+                valid = false;
+            } else { clearError(name, nameErr); }
+
+            // Email
+            if (!email.value.trim()) {
+                setError(email, emailErr, 'Email tidak boleh kosong');
+                valid = false;
+            } else { clearError(email, emailErr); }
+
+            // Password
+            if (!pwd.value) {
+                setError(pwd, pwdErr, 'Password tidak boleh kosong');
+                valid = false;
+            } else { clearError(pwd, pwdErr); }
+
+            // Confirm Password
+            if (!pwdConf.value) {
+                setError(pwdConf, confirmErr, 'Konfirmasi password tidak boleh kosong');
+                valid = false;
+            } else if (pwdConf.value !== pwd.value) {
+                setError(pwdConf, confirmErr, 'Password dan konfirmasi tidak cocok');
+                valid = false;
+            } else { clearError(pwdConf, confirmErr); }
+
+            // Province & City
+            if (!province.value || !city.value.trim()) {
+                if (!province.value) province.classList.add('input-error');
+                if (!city.value.trim()) city.classList.add('input-error');
+                locationErr.classList.add('show');
+                locationErr.textContent = '⚠ Provinsi dan kota wajib diisi';
+                valid = false;
+            } else {
+                province.classList.remove('input-error');
+                city.classList.remove('input-error');
+                locationErr.classList.remove('show');
+            }
+
+            // Terms
+            if (!terms.checked) {
+                termsErr.classList.add('show');
+                valid = false;
+            } else {
+                termsErr.classList.remove('show');
+            }
+
+            if (!valid) {
+                e.preventDefault();
+                // Scroll to first error
+                const firstErr = document.querySelector('.input-error, .inline-error.show');
+                if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
     </script>
 </body>
 </html>

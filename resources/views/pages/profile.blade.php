@@ -125,7 +125,7 @@
     </div>
 
     <div class="profile-info">
-      <h2>{{ $profile['name'] ?? 'User' }} <span class="verified-badge">{{ ($profile['verified'] ?? true) ? '✓ VERIFIED' : '' }}</span></h2>
+      <h2>{{ $profile['name'] ?? 'User' }} <span class="verified-badge">{{ ($profile['verified'] ?? true) ? 'VERIFIED' : '' }}</span></h2>
       <div class="level">{{ $profile['level'] ?? 'Reader Level 1' }}</div>
       <div class="bio">{{ $profile['bio'] ?? 'Pengguna aktif Siklus. Suka berbagi buku dan menemukan bacaan baru.' }}</div>
       <div class="profile-actions" style="align-items:center;">
@@ -174,15 +174,16 @@
     <div class="book-grid">
       @foreach(range(1,4) as $i)
       <div class="book-card">
-        <a href="{{ route('book.show', $i) }}" class="book-link" style="text-decoration:none;color:inherit;">
           <img src="{{ asset('images/cover_art_of_loving.webp') }}" class="cover" alt=""
                onerror="this.style.background='linear-gradient(135deg,#1a1a1a,#444)';this.removeAttribute('src')">
           <div class="card-body">
             <div class="card-title">The Art Of Loving</div>
             <div class="card-author">Erich Fromm</div>
-            <div class="card-footer"><span class="arrow-btn">&#8594;</span></div>
+            <div class="card-footer">
+              <span style="font-size:10px;color:rgba(255,255,255,.8);font-weight:600;background:rgba(37,99,235,.7);padding:2px 6px;border-radius:4px;">Filsafat</span>
+            </div>
           </div>
-        </a>
+          <a href="{{ route('book.show', $i) }}" class="book-link" aria-label="The Art Of Loving"></a>
       </div>
       @endforeach
     </div>
@@ -193,7 +194,7 @@
     <div class="section-title" style="margin-bottom:16px">{{ __('profile.expertise_badges') }}</div>
     <div class="badges-grid">
       <div class="badge-item">
-        <div class="badge-icon" style="background:#EFF6FF">&#128218;</div>
+        <div class="badge-icon" style="background:#EFF6FF;color:var(--blue);font-weight:700;font-size:12px;">BK</div>
         <div><div class="badge-name">{{ __('profile.history_buff') }}</div><div class="badge-desc">{{ __('profile.top_contributor') }}</div></div>
       </div>
       <div class="badge-item">

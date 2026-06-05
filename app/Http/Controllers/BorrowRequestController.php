@@ -24,30 +24,30 @@ class BorrowRequestController extends Controller
         $finishedBooks = [];
         
         foreach ($borrowRequests as $request) {
+            $book = $request->book;
             $itemData = [
                 'id'              => $request->id,
-                'title'           => $request->book->title,
-                'author'          => $request->book->author,
-                'cover'           => $request->book->cover,
+                'title'           => $book->title,
+                'author'          => $book->author,
+                'cover'           => $book->cover,
                 'borrow_date'     => $request->borrow_date->format('m/d/Y'),
                 'return_date'     => $request->return_date ? $request->return_date->format('m/d/Y') : 'TBD',
-                'lender_name'     => $request->book->owner_name,
-                'lender_avatar'   => $request->book->owner_avatar,
-                'lender_id'       => $request->book->id, // Using book id as identifier
-                'status'          => $request->status,
+                'lender_name'     => $book->owner_name,
+                'lender_avatar'   => $book->user?->avatar ?? 'avatar_user.png',
+                'lender_id'       => $book->user_id,
             ];
-            
+
             if ($request->status === 'approved') {
                 $itemData['status'] = 'onread';
-                $itemData['statusLabel'] = 'On Read';
+                $itemData['statusLabel'] = __('borrow.on_read');
                 $onReadBooks[] = $itemData;
             } elseif ($request->status === 'pending') {
                 $itemData['status'] = 'appeal';
-                $itemData['statusLabel'] = 'Appealed';
+                $itemData['statusLabel'] = __('borrow.appealed');
                 $pendingBooks[] = $itemData;
-            } else { // rejected or returned
+            } else {
                 $itemData['status'] = 'finish';
-                $itemData['statusLabel'] = 'Finished';
+                $itemData['statusLabel'] = __('borrow.finished');
                 $finishedBooks[] = $itemData;
             }
         }
@@ -145,11 +145,91 @@ class BorrowRequestController extends Controller
     }
 
     /**
+     * Manual status update from Borrowed Books page (badge click).
+     */
+    public function updateStatus(Request $request, BorrowRequest $borrowRequest)
+    {
+        if ($borrowRequest->email !== Auth::user()->email) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $validated = $request->validate([
+            'status' => 'required|in:appeal,approved,onread,finish',
+        ]);
+
+        $uiStatus = $validated['status'];
+        $dbStatus = match ($uiStatus) {
+            'appeal'   => 'pending',
+            'approved', 'onread' => 'approved',
+            'finish'   => 'returned',
+        };
+
+        $borrowRequest->update(['status' => $dbStatus]);
+
+        $book = $borrowRequest->book;
+        if ($book) {
+            $bookStatus = match ($dbStatus) {
+                'pending'  => $book->book_status === 'on_loan' ? 'available' : $book->book_status,
+                'approved' => 'on_loan',
+                'returned' => 'returned',
+            };
+            $book->update(['book_status' => $bookStatus]);
+        }
+
+        $statusLabel = match ($uiStatus) {
+            'appeal'   => __('borrow.appealed'),
+            'approved' => __('borrow.approved'),
+            'onread'   => __('borrow.on_read'),
+            'finish'   => __('borrow.finished'),
+        };
+
+        return response()->json([
+            'success'      => true,
+            'status'       => $uiStatus,
+            'status_label' => $statusLabel,
+            'status_class' => match ($uiStatus) {
+                'appeal'   => 's-appeal',
+                'approved' => 's-approved',
+                'onread'   => 's-onread',
+                default    => 's-finish',
+            },
+        ]);
+    }
+
+    /**
      * Cancel / delete a borrow request.
      */
     public function destroy(BorrowRequest $borrowRequest)
     {
         $borrowRequest->delete();
         return redirect()->back()->with('success', 'Permintaan peminjaman dibatalkan!');
+    }
+
+    /**
+     * Dismiss (sembunyikan) notifikasi dari panel lonceng.
+     * Hanya menandai dismissed_by_owner = true, tidak menghapus record.
+     */
+    public function dismiss(BorrowRequest $borrowRequest)
+    {
+        // Pastikan hanya pemilik buku yang bisa dismiss
+        if ($borrowRequest->book?->user_id !== Auth::id()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $borrowRequest->update([
+            'dismissed_by_owner' => true,
+            'read_by_owner'      => true,
+        ]);
+
+        // Hitung ulang jumlah notif yang belum dibaca
+        $unreadCount = BorrowRequest::whereHas('book', fn($q) => $q->where('user_id', Auth::id()))
+            ->where('read_by_owner', false)
+            ->where('dismissed_by_owner', false)
+            ->count();
+
+        return response()->json([
+            'success'      => true,
+            'unread_count' => $unreadCount,
+        ]);
     }
 }

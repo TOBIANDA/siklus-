@@ -79,6 +79,7 @@
     cursor: pointer;
     width: 100%;
     height: 100%;
+    z-index: 10; /* stay above preview image */
 }
 .upload-cover-icon {
     width: 52px;
@@ -118,6 +119,8 @@
     inset: 0;
     border-radius: 12px;
     display: none;
+    z-index: 1; /* below the file input */
+    pointer-events: none; /* let clicks pass through to file input */
 }
 
 /* ---- MIDDLE column ---- */
@@ -168,10 +171,16 @@
 .upload-select {
     appearance: none;
     -webkit-appearance: none;
+    -moz-appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 14px center;
+    background-size: 12px;
     padding-right: 36px;
+    cursor: pointer;
+}
+.upload-select::-ms-expand {
+    display: none;
 }
 
 /* Buttons row */
@@ -225,12 +234,43 @@
     margin-bottom: 16px;
 }
 
+/* Inline field validation */
+.upload-input.field-error {
+    border-color: #EF4444 !important;
+    background: #FFF5F5 !important;
+    box-shadow: 0 0 0 3px rgba(239,68,68,.12) !important;
+}
+.upload-cover-box.field-error {
+    border-color: #EF4444 !important;
+    background: #FFF5F5 !important;
+}
+.field-error-msg {
+    font-size: 12px;
+    color: #DC2626;
+    font-weight: 600;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.field-error-msg::before { content: '⚠ '; }
+
 /* Dark mode */
 [data-theme="dark"] .upload-card { background: #1F2937; border-color: #374151; }
 [data-theme="dark"] .upload-cover-box { background: #374151; border-color: #4B5563; }
 [data-theme="dark"] .upload-cover-box:hover { background: #1e3a5f; border-color: var(--blue,#2563EB); }
 [data-theme="dark"] .upload-input { background: #374151; border-color: #4B5563; color: #F9FAFB; }
 [data-theme="dark"] .upload-input:focus { background: #1F2937; }
+[data-theme="dark"] .upload-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23D1D5DB' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 12px;
+}
+[data-theme="dark"] .upload-select option {
+    background: #374151;
+    color: #F9FAFB;
+}
 [data-theme="dark"] .upload-header { color: #F9FAFB; }
 
 /* Responsive */
@@ -250,8 +290,9 @@
 
     {{-- Flash messages --}}
     @if($errors->any())
-    <div class="upload-alert-err">
-        ❌ {{ $errors->first() }}
+    <div class=\"upload-alert-err\" style=\"background:#FEE2E2;color:#991B1B;display:flex;align-items:center;gap:8px;\">
+        <span style=\"font-weight:700;font-size:16px;\">✕</span>
+        {{ $errors->first() }}
     </div>
     @endif
 
@@ -268,68 +309,83 @@
             <div class="upload-grid">
 
                 {{-- ===== LEFT: Cover Uploader ===== --}}
-                <div
-                    class="upload-cover-box"
-                    id="coverBox"
-                    title="Klik untuk memilih gambar cover"
-                >
-                    <input
-                        type="file"
-                        name="cover"
-                        id="coverInput"
-                        accept="image/*"
+                <div>
+                    <label
+                        for="coverInput"
+                        class="upload-cover-box"
+                        id="coverBox"
+                        title="Klik untuk memilih gambar cover"
+                        style="display:flex;"
                     >
-                    <img id="coverPreview" class="upload-cover-preview" alt="Preview cover">
-                    <div class="upload-cover-icon" id="coverPlaceholder">&#8679;</div>
-                    <span class="upload-cover-label" id="coverText">Click to upload</span>
+                        <input
+                            type="file"
+                            name="cover"
+                            id="coverInput"
+                            accept="image/jpeg,image/png,image/webp,image/jpg"
+                        >
+                        <img id="coverPreview" class="upload-cover-preview" alt="Preview cover">
+                        <div class="upload-cover-icon" id="coverPlaceholder">&#8679;</div>
+                        <span class="upload-cover-label" id="coverText">Klik untuk upload gambar</span>
+                    </label>
+                    <div class="field-error-msg" id="coverError" style="display:none;">Cover buku wajib diisi</div>
                 </div>
 
                 {{-- ===== MIDDLE: Title + Description ===== --}}
                 <div class="upload-col-mid">
-                    <input
-                        type="text"
-                        name="title"
-                        class="upload-input"
-                        placeholder="Book Title"
-                        value="{{ old('title') }}"
-                        required
-                    >
+                    <div>
+                        <input
+                            type="text"
+                            name="title"
+                            id="fieldTitle"
+                            class="upload-input"
+                            placeholder="Book Title"
+                            value="{{ old('title') }}"
+                        >
+                        <div class="field-error-msg" id="titleError" style="display:none;">Judul buku wajib diisi</div>
+                    </div>
                     <textarea
                         name="description"
                         class="upload-input upload-textarea"
-                        placeholder="Book Short Description"
+                        placeholder="Book Short Description (opsional)"
                         maxlength="500"
+                        style="flex:1;"
                     >{{ old('description') }}</textarea>
                 </div>
 
                 {{-- ===== RIGHT: Author + Category + Location ===== --}}
                 <div class="upload-col-right">
-                    <input
-                        type="text"
-                        name="author"
-                        class="upload-input"
-                        placeholder="Author's Name"
-                        value="{{ old('author') }}"
-                        required
-                    >
-                    <select name="category" class="upload-input upload-select" required>
-                        <option value="" disabled {{ old('category') ? '' : 'selected' }}>Genre</option>
-                        @foreach(['Fiksi','Non-Fiksi','Akademik','Komik','Biografi','Pengembangan Diri','Umum'] as $cat)
-                        <option value="{{ $cat }}" {{ old('category') == $cat ? 'selected' : '' }}>{{ $cat }}</option>
-                        @endforeach
-                    </select>
+                    <div>
+                        <input
+                            type="text"
+                            name="author"
+                            id="fieldAuthor"
+                            class="upload-input"
+                            placeholder="Author's Name"
+                            value="{{ old('author') }}"
+                        >
+                        <div class="field-error-msg" id="authorError" style="display:none;">Nama penulis wajib diisi</div>
+                    </div>
+                    <div>
+                        <select name="category" id="fieldCategory" class="upload-input upload-select">
+                            <option value="" disabled {{ old('category') ? '' : 'selected' }}>Genre</option>
+                            @foreach(['Fiksi','Non-Fiksi','Akademik','Komik','Biografi','Pengembangan Diri','Umum'] as $cat)
+                            <option value="{{ $cat }}" {{ old('category') == $cat ? 'selected' : '' }}>{{ $cat }}</option>
+                            @endforeach
+                        </select>
+                        <div class="field-error-msg" id="categoryError" style="display:none;">Kategori/genre wajib dipilih</div>
+                    </div>
                     <input
                         type="text"
                         name="location"
                         class="upload-input"
-                        placeholder="Date of Release (Lokasi)"
+                        placeholder="Lokasi (opsional)"
                         value="{{ old('location') }}"
                     >
                     <input
                         type="number"
                         name="pages"
                         class="upload-input"
-                        placeholder="Number of Pages"
+                        placeholder="Jumlah Halaman (opsional)"
                         value="{{ old('pages') }}"
                         min="1"
                     >
@@ -356,18 +412,97 @@
     const coverPreview = document.getElementById('coverPreview');
     const coverHolder  = document.getElementById('coverPlaceholder');
     const coverText    = document.getElementById('coverText');
+    const coverBox     = document.getElementById('coverBox');
+    const coverError   = document.getElementById('coverError');
 
     coverInput.addEventListener('change', function () {
         const file = this.files[0];
         if (!file) return;
+
+        // Validate image type
+        if (!file.type.startsWith('image/')) {
+            showFieldError(coverBox, coverError, 'File harus berupa gambar (JPG, PNG, WebP)');
+            this.value = '';
+            return;
+        }
+        // Validate file size (max 2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            showFieldError(coverBox, coverError, 'Ukuran gambar maksimal 2MB');
+            this.value = '';
+            return;
+        }
+
+        clearFieldError(coverBox, coverError);
         const reader = new FileReader();
         reader.onload = function (e) {
             coverPreview.src = e.target.result;
             coverPreview.style.display = 'block';
-            coverHolder.style.display  = 'none';
-            coverText.style.display    = 'none';
+            if (coverHolder) coverHolder.style.display = 'none';
+            if (coverText)   coverText.style.display   = 'none';
         };
         reader.readAsDataURL(file);
+    });
+
+    // ---- Field validation helpers ----
+    function showFieldError(el, msgEl, msg) {
+        if (el)    el.classList.add('field-error');
+        if (msgEl) { msgEl.textContent = '⚠ ' + msg; msgEl.style.display = 'flex'; }
+    }
+    function clearFieldError(el, msgEl) {
+        if (el)    el.classList.remove('field-error');
+        if (msgEl) msgEl.style.display = 'none';
+    }
+
+    function validateForm() {
+        let valid = true;
+
+        const title    = document.getElementById('fieldTitle');
+        const author   = document.getElementById('fieldAuthor');
+        const category = document.getElementById('fieldCategory');
+        const titleErr    = document.getElementById('titleError');
+        const authorErr   = document.getElementById('authorError');
+        const categoryErr = document.getElementById('categoryError');
+
+        // Title
+        if (!title.value.trim()) {
+            showFieldError(title, titleErr, 'Judul buku wajib diisi');
+            valid = false;
+        } else {
+            clearFieldError(title, titleErr);
+        }
+
+        // Author
+        if (!author.value.trim()) {
+            showFieldError(author, authorErr, 'Nama penulis wajib diisi');
+            valid = false;
+        } else {
+            clearFieldError(author, authorErr);
+        }
+
+        // Category
+        if (!category.value) {
+            showFieldError(category, categoryErr, 'Kategori/genre wajib dipilih');
+            valid = false;
+        } else {
+            clearFieldError(category, categoryErr);
+        }
+
+        return valid;
+    }
+
+    // Clear error on input
+    ['fieldTitle','fieldAuthor','fieldCategory'].forEach(id => {
+        const el = document.getElementById(id);
+        const errEl = document.getElementById(id.replace('field','').toLowerCase() + 'Error')
+                   || document.getElementById({
+                       fieldTitle: 'titleError',
+                       fieldAuthor: 'authorError',
+                       fieldCategory: 'categoryError'
+                   }[id]);
+        if (el && errEl) {
+            el.addEventListener('input', () => clearFieldError(el, errEl));
+            el.addEventListener('change', () => clearFieldError(el, errEl));
+        }
     });
 
     // ---- AJAX submit ----
@@ -378,8 +513,16 @@
     form.addEventListener('submit', async function (e) {
         e.preventDefault();
 
+        // Run client-side validation first
+        if (!validateForm()) {
+            // Scroll to first error
+            const firstErr = form.querySelector('.field-error');
+            if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+
         saveBtn.disabled    = true;
-        saveBtn.textContent = '⏳ Menyimpan...';
+        saveBtn.textContent = 'Menyimpan...';
 
         const formData = new FormData(form);
 
@@ -401,10 +544,17 @@
                 // Redirect to lent page after success
                 setTimeout(() => { window.location.href = '{{ route("lent") }}'; }, 900);
             } else {
-                const errors = data.errors
-                    ? Object.values(data.errors).flat().join('\n')
+                // Show server-side validation errors on fields
+                if (data.errors) {
+                    if (data.errors.title)    showFieldError(document.getElementById('fieldTitle'),    document.getElementById('titleError'),    data.errors.title[0]);
+                    if (data.errors.author)   showFieldError(document.getElementById('fieldAuthor'),   document.getElementById('authorError'),   data.errors.author[0]);
+                    if (data.errors.category) showFieldError(document.getElementById('fieldCategory'), document.getElementById('categoryError'), data.errors.category[0]);
+                    if (data.errors.cover)    showFieldError(coverBox, coverError, data.errors.cover[0]);
+                }
+                const errMsg = data.errors
+                    ? Object.values(data.errors).flat().join(', ')
                     : (data.message || 'Terjadi kesalahan.');
-                if (window.showToast) showToast(errors, true);
+                if (window.showToast) showToast('Error: ' + errMsg, true);
                 saveBtn.disabled    = false;
                 saveBtn.textContent = 'Save Changes';
             }

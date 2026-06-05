@@ -2,6 +2,21 @@
 
 @section('content')
 <style>
+.back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--blue);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    transition: color 0.2s;
+}
+.back-button:hover {
+    color: var(--blue-dark);
+}
+
 .settings-container {
     max-width: 600px;
     margin: 0 auto;
@@ -19,7 +34,7 @@
 .settings-header h2 {
     font-size: 28px;
     font-weight: 700;
-    font-family: 'DM Serif Display', serif;
+    font-family: 'Lato', sans-serif;
     color: var(--dark);
 }
 .settings-header p {
@@ -37,6 +52,7 @@
     font-weight: 700;
     margin-bottom: 8px;
     color: var(--dark);
+    font-family: 'Lato', sans-serif;
 }
 .form-group input, .form-group textarea, .form-group select {
     width: 100%;
@@ -49,7 +65,7 @@
     transition: border-color 0.2s;
     background: var(--gray-light);
 }
-.form-group input:focus, .form-group textarea:focus {
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus {
     border-color: var(--blue);
     background: var(--white);
 }
@@ -74,12 +90,60 @@
     color: white;
     font-size: 32px;
     font-weight: 700;
+    flex-shrink: 0;
 }
 .avatar-preview img {
     width: 100%;
     height: 100%;
     border-radius: 50%;
     object-fit: cover;
+}
+
+.avatar-upload-group {
+    flex: 1;
+}
+.avatar-upload-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 8px;
+    font-family: 'Lato', sans-serif;
+}
+.avatar-upload-wrapper {
+    display: flex;
+    gap: 12px;
+}
+.avatar-upload-wrapper input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid var(--gray-border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: 'Lato', sans-serif;
+    background: var(--gray-light);
+}
+.avatar-upload-wrapper button {
+    background: var(--blue);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-weight: 600;
+    font-size: 14px;
+    font-family: 'Lato', sans-serif;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+.avatar-upload-wrapper button:hover {
+    background: var(--blue-dark);
+}
+.avatar-upload-hint {
+    font-size: 11px;
+    color: var(--gray);
+    margin-top: 6px;
+    font-family: 'Lato', sans-serif;
 }
 
 .btn-primary {
@@ -90,6 +154,7 @@
     border-radius: 8px;
     font-weight: 700;
     font-size: 16px;
+    font-family: 'Lato', sans-serif;
     cursor: pointer;
     width: 100%;
     transition: background 0.2s;
@@ -105,8 +170,10 @@
 }
 .danger-zone h3 {
     font-size: 18px;
+    font-weight: 700;
     color: #ef4444;
     margin-bottom: 16px;
+    font-family: 'Lato', sans-serif;
 }
 .btn-danger {
     background: transparent;
@@ -116,6 +183,7 @@
     border-radius: 8px;
     font-weight: 700;
     font-size: 16px;
+    font-family: 'Lato', sans-serif;
     cursor: pointer;
     width: 100%;
     transition: all 0.2s;
@@ -124,13 +192,24 @@
     background: #fee2e2;
 }
 
-/* Alert */
 .alert-success {
     background: #D1FAE5; color: #065F46; border-radius: 8px;
     padding: 12px 16px; font-size: 14px; font-weight: 600;
-    margin-bottom: 24px; text-align: center;
+    margin-bottom: 24px; text-align: center; font-family: 'Lato', sans-serif;
+}
+.alert-error {
+    background: #FEE2E2; color: #991B1B; border-radius: 8px;
+    padding: 12px 16px; font-size: 14px; font-weight: 600;
+    margin-bottom: 24px; text-align: center; font-family: 'Lato', sans-serif;
 }
 </style>
+
+<div style="padding: 24px; max-width: 600px; margin: 0 auto;">
+    <a href="{{ route('profile') }}" class="back-button" title="Kembali ke profil">
+        <span>←</span>
+        <span>Kembali</span>
+    </a>
+</div>
 
 <div class="settings-container">
     <div class="settings-header">
@@ -139,27 +218,71 @@
     </div>
 
     @if(session('success'))
-        <div class="alert-success">✅ {{ session('success') }}</div>
+        <div class="alert-success">{{ session('success') }}</div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert-error">{{ session('error') }}</div>
     @endif
 
     <!-- Avatar Form -->
-    <form action="{{ route('profile.photo') }}" method="POST" enctype="multipart/form-data" class="avatar-section">
+    <form action="{{ route('profile.photo') }}" method="POST" enctype="multipart/form-data" class="avatar-section" id="avatarForm">
         @csrf @method('PUT')
-        <div class="avatar-preview">
-            @if($user->avatar)
-                <img src="{{ asset('images/' . $user->avatar) }}" alt="Avatar" onerror="this.style.display='none'">
-            @else
-                {{ strtoupper(substr($user->name, 0, 1)) }}
-            @endif
+        <div class="avatar-preview" id="avatarPreviewWrap">
+            <img id="avatarPreviewImg"
+                 src="{{ $user->avatar_url }}"
+                 alt="Avatar"
+                 onerror="this.style.display='none'">
         </div>
-        <div style="flex: 1;">
-            <label style="display:block; font-size:14px; font-weight:700; color:var(--dark); margin-bottom:8px;">{{ __('profile.profile_picture') }}</label>
-            <div style="display:flex; gap:12px;">
-                <input type="file" name="photo" accept="image/*" required style="font-size:14px; padding:6px;">
-                <button type="submit" style="background:var(--dark); color:white; border:none; border-radius:4px; padding:8px 16px; font-weight:600; cursor:pointer;">{{ __('common.upload') }}</button>
+        <div class="avatar-upload-group">
+            <label>{{ __('profile.profile_picture') }}</label>
+            <div class="avatar-upload-wrapper">
+                <input type="file" name="photo" id="photoInput" accept="image/*" required>
+                <button type="submit" id="uploadBtn">{{ __('common.upload') }}</button>
             </div>
+            <p class="avatar-upload-hint">JPG, PNG, GIF · Maks 2MB</p>
         </div>
     </form>
+
+    <script>
+    // Live preview: show selected image before uploading
+    document.getElementById('photoInput').addEventListener('change', function() {
+        const file = this.files[0];
+        if (!file) return;
+        
+        // Validate file size
+        if (file.size > 2 * 1024 * 1024) {
+            alert('File terlalu besar. Maksimal 2MB.');
+            this.value = '';
+            return;
+        }
+        
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            alert('File harus berupa gambar (JPG, PNG, GIF).');
+            this.value = '';
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = document.getElementById('avatarPreviewImg');
+            img.src = e.target.result;
+            img.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    });
+    
+    // Auto-submit on file select (optional - can also keep manual button)
+    // Or add error handling
+    document.getElementById('avatarForm').addEventListener('submit', function(e) {
+        const fileInput = document.getElementById('photoInput');
+        if (!fileInput.files || fileInput.files.length === 0) {
+            e.preventDefault();
+            alert('Pilih file terlebih dahulu');
+        }
+    });
+    </script>
 
     <!-- Profile Data Form -->
     <form action="{{ route('profile.update') }}" method="POST">

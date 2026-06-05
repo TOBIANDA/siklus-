@@ -209,10 +209,12 @@
     font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none;
 }
 .inbox-send-btn {
-    width: 40px; height: 40px; background: var(--blue); border: none;
-    border-radius: 50%; cursor: pointer; display: flex;
-    align-items: center; justify-content: center; color: white; font-size: 16px;
+    width: 40px; height: 40px; background: none; border: none;
+    border-radius: 0; cursor: pointer; display: flex;
+    align-items: center; justify-content: center; padding: 4px;
+    transition: opacity .15s;
 }
+.inbox-send-btn:hover { opacity: 0.75; }
 
 /* Alert */
 .alert-success {
@@ -226,6 +228,89 @@
     align-items: center; justify-content: center;
     gap: 12px; color: var(--gray); text-align: center;
 }
+
+/* ===== MESSAGES DARK MODE ===== */
+[data-theme="dark"] .inbox-sidebar {
+    background: #1E2433; border-color: #334155;
+}
+[data-theme="dark"] .inbox-sidebar-header {
+    border-color: #334155;
+}
+[data-theme="dark"] .inbox-sidebar-header h2 { color: #F1F5F9; }
+[data-theme="dark"] .inbox-sidebar-sub { color: #64748B; }
+[data-theme="dark"] .inbox-thread {
+    border-color: #334155; color: #F1F5F9;
+}
+[data-theme="dark"] .inbox-thread:hover { background: #2A3045; }
+[data-theme="dark"] .inbox-thread.active { background: rgba(37,99,235,.15); }
+[data-theme="dark"] .inbox-thread.unread { background: rgba(37,99,235,.08); }
+[data-theme="dark"] .inbox-thread-name { color: #F1F5F9; }
+[data-theme="dark"] .inbox-thread-preview { color: #64748B; }
+[data-theme="dark"] .inbox-thread-time { color: #64748B; }
+
+[data-theme="dark"] .inbox-detail {
+    background: #0F1623;
+}
+[data-theme="dark"] .inbox-detail-header {
+    background: #1E2433; border-color: #334155;
+}
+[data-theme="dark"] .inbox-detail-title { color: #F1F5F9; }
+[data-theme="dark"] .inbox-detail-sub { color: #64748B; }
+
+/* Request card */
+[data-theme="dark"] .req-card {
+    background: #1E2433;
+    border-color: #334155;
+    box-shadow: 0 4px 20px rgba(0,0,0,.3);
+}
+[data-theme="dark"] .req-borrower-name { color: #F1F5F9; }
+[data-theme="dark"] .req-borrower-sub { color: #94A3B8; }
+[data-theme="dark"] .req-book-row {
+    background: #2A3045; border: 1px solid #334155;
+}
+[data-theme="dark"] .req-book-title { color: #F1F5F9; }
+[data-theme="dark"] .req-book-author { color: #94A3B8; }
+[data-theme="dark"] .req-info-item label { color: #64748B; }
+[data-theme="dark"] .req-info-item span { color: #F1F5F9; }
+[data-theme="dark"] .req-message-box {
+    background: rgba(37,99,235,.12);
+    border-left-color: #60A5FA;
+    color: #93C5FD;
+}
+
+/* Status badges in dark */
+[data-theme="dark"] .req-status-pending  { background: rgba(251,191,36,.15); color: #FCD34D; }
+[data-theme="dark"] .req-status-approved { background: rgba(16,185,129,.15); color: #6EE7B7; }
+[data-theme="dark"] .req-status-rejected { background: rgba(239,68,68,.15);  color: #FCA5A5; }
+[data-theme="dark"] .req-status-returned { background: rgba(99,102,241,.15); color: #A5B4FC; }
+
+/* Action buttons in dark */
+[data-theme="dark"] .btn-reject  { background: rgba(220,38,38,.15); color: #FCA5A5; }
+[data-theme="dark"] .btn-reject:hover { background: rgba(220,38,38,.25); }
+[data-theme="dark"] .btn-returned { background: rgba(16,185,129,.15); color: #6EE7B7; }
+[data-theme="dark"] .btn-returned:hover { background: rgba(16,185,129,.25); }
+
+/* Chat bubbles */
+[data-theme="dark"] .chat-bubble.recv {
+    background: #2A3045; border-color: #334155; color: #F1F5F9;
+}
+[data-theme="dark"] .chat-time { color: #64748B; }
+
+/* Input area */
+[data-theme="dark"] .inbox-input-area {
+    background: #1E2433; border-color: #334155;
+}
+[data-theme="dark"] .inbox-input {
+    background: #2A3045; color: #F1F5F9;
+}
+[data-theme="dark"] .inbox-input::placeholder { color: #64748B; }
+[data-theme="dark"] .act-btn { color: #64748B; }
+
+/* No detail panel */
+[data-theme="dark"] .no-detail p { color: #F1F5F9; }
+[data-theme="dark"] .no-detail small { color: #64748B; }
+[data-theme="dark"] .inbox-empty p { color: #F1F5F9; }
+[data-theme="dark"] .inbox-empty small { color: #64748B; }
 </style>
 
 <div class="inbox-wrap">
@@ -270,7 +355,6 @@
             </a>
             @empty
             <div class="inbox-empty">
-                <div class="ie-icon">💬</div>
                 <p>Belum ada pesan</p>
                 <small>Permintaan peminjaman buku kamu akan muncul di sini</small>
             </div>
@@ -282,7 +366,10 @@
     <div class="inbox-detail">
 
         @if(session('success'))
-        <div class="alert-success">✅ {{ session('success') }}</div>
+        <div class="alert-success" style="background:#D1FAE5;color:#065F46;display:flex;align-items:center;gap:8px;">
+    <span style="color:#10B981;font-weight:700;font-size:16px;">✓</span>
+    {{ session('success') }}
+  </div>
         @endif
 
         @if(isset($activeRequest) && $activeRequest)
@@ -450,7 +537,7 @@
             <div class="chat-bubble-row {{ $isOwner ? 'self' : '' }}">
                 @if(!$isOwner)<div class="inbox-avatar" style="width:32px;height:32px;font-size:12px;flex-shrink:0;">{{ strtoupper(substr($req->book->owner_name, 0, 1)) }}</div>@endif
                 <div class="chat-bubble-wrapper">
-                    <div class="chat-bubble {{ $isOwner ? 'sent' : 'recv' }}">Halo! Permintaanmu sudah saya setujui. Kita bisa COD di lokasi yang kamu sebutkan ya! 📚</div>
+                    <div class=\"chat-bubble {{ $isOwner ? 'sent' : 'recv' }}\">Halo! Permintaanmu sudah saya setujui. Kita bisa COD di lokasi yang kamu sebutkan ya!</div>
                     <div class="chat-time {{ $isOwner ? 'r' : '' }}">{{ $req->updated_at->format('H:i') }}</div>
                 </div>
             </div>
@@ -468,9 +555,13 @@
 
         {{-- Input area --}}
         <div class="inbox-input-area">
-            <button class="act-btn">&#10133;</button>
+            <button class="act-btn" style="background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;justify-content:center;">
+                <img src="{{ asset('images/Container (2).png') }}" alt="Add" style="width:24px;height:24px;object-fit:contain;">
+            </button>
             <input class="inbox-input" type="text" placeholder="Tulis pesan...">
-            <button class="inbox-send-btn">&#9658;</button>
+            <button class="inbox-send-btn">
+                <img src="{{ asset('images/Button.png') }}" alt="Send" style="width:20px;height:20px;object-fit:contain;">
+            </button>
         </div>
         <div class="secured" style="text-align:center;font-size:10px;color:var(--gray);padding:6px;letter-spacing:.08em;text-transform:uppercase;">
             Secured by Siklus Community Protocol

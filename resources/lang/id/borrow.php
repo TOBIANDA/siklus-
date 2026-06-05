@@ -14,4 +14,9 @@ return [
     'pending' => 'Tertunda',
     'finished_reading' => 'Selesai Dibaca',
     'finished' => 'Selesai',
+    'approved' => 'Disetujui',
+    'pending_request' => 'Permintaan Tertunda',
+    'trust_score' => 'Skor Kepercayaan',
+    'review' => 'Ulasan',
+    'change_status' => 'Ubah status',
 ];

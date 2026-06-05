@@ -3,6 +3,23 @@
 @section('content')
 @php $user = auth()->user(); @endphp
 <style>
+/* Back Button */
+.back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--blue);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Lato', sans-serif;
+    margin-bottom: 16px;
+    transition: color 0.2s;
+}
+.back-button:hover {
+    color: var(--blue-dark);
+}
+
 /* ====== SETTINGS PAGE ====== */
 .settings-wrap {
     max-width: 720px;
@@ -13,7 +30,9 @@
     font-size: 22px;
     font-weight: 700;
     margin-bottom: 24px;
+    margin-top: 0;
     color: var(--dark);
+    font-family: 'Lato', sans-serif;
 }
 
 /* Section card */
@@ -35,6 +54,7 @@
     text-transform: uppercase;
     color: var(--gray);
     margin: 0;
+    font-family: 'Lato', sans-serif;
 }
 
 /* Row inside card */
@@ -57,10 +77,12 @@
     font-weight: 600;
     color: var(--dark);
     margin-bottom: 2px;
+    font-family: 'Lato', sans-serif;
 }
 .settings-row-label span {
     font-size: 12px;
     color: var(--gray);
+    font-family: 'Lato', sans-serif;
 }
 
 /* Toggle switch */
@@ -127,8 +149,8 @@
     overflow: hidden;
 }
 .settings-user-bg {
-    position: absolute; right: -16px; top: 50%;
-    transform: translateY(-50%);
+    position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
     font-size: 96px; font-weight: 900; opacity: .06;
     font-family: 'DM Serif Display', serif; letter-spacing: -4px;
     pointer-events: none; color: white;
@@ -141,7 +163,7 @@
     font-size: 22px; font-weight: 700; color: white;
 }
 .settings-user-av img { width: 100%; height: 100%; object-fit: cover; }
-.settings-user-info { flex: 1; color: white; }
+.settings-user-info { flex: 1; color: white; font-family: 'Lato', sans-serif; }
 .settings-user-info .su-name { font-size: 17px; font-weight: 700; margin-bottom: 3px; }
 .settings-user-info .su-email { font-size: 12px; opacity: .6; margin-bottom: 7px; }
 .settings-user-info .su-level {
@@ -261,7 +283,48 @@
     color: var(--gray); margin: 0;
     font-family: 'DM Sans', sans-serif;
 }
+
+/* ===== SETTINGS DARK MODE ===== */
+[data-theme="dark"] .lang-loading { background: rgba(15,22,35,0.92); }
+[data-theme="dark"] .lang-loading p { color: #94A3B8; }
+[data-theme="dark"] .lang-loading-spinner { border-color: #334155; border-top-color: #60A5FA; }
+[data-theme="dark"] .settings-page-title { color: #F1F5F9; }
+[data-theme="dark"] .settings-card-header h3 { color: #64748B; }
+[data-theme="dark"] .settings-card { background: #1E2433; border-color: #334155; }
+[data-theme="dark"] .settings-card-header { border-color: #334155; }
+[data-theme="dark"] .settings-row { border-color: #2A3045; }
+[data-theme="dark"] .settings-row:hover { background: #2A3045; }
+[data-theme="dark"] .settings-row-label strong { color: #F1F5F9; }
+[data-theme="dark"] .settings-row-label span { color: #64748B; }
+[data-theme="dark"] .settings-select { background: #2A3045; color: #F1F5F9; border-color: #334155; }
+[data-theme="dark"] .row-chevron { color: #475569; }
+[data-theme="dark"] .logout-btn { color: #F87171; }
+[data-theme="dark"] .logout-btn:hover { background: rgba(239,68,68,.1); }
+[data-theme="dark"] .logout-dot { background: #F87171; }
+[data-theme="dark"] .theme-chip { background: #2A3045; border-color: #334155; color: #94A3B8; }
+[data-theme="dark"] .theme-chip.active-dark { background: #3B5BDB; border-color: #3B5BDB; color: white; }
+[data-theme="dark"] .theme-chip.active-light { background: #1E3A5F; border-color: #60A5FA; color: #60A5FA; }
+[data-theme="dark"] .size-chip { background: #2A3045; border-color: #334155; color: #94A3B8; }
+[data-theme="dark"] .size-chip.active { background: #1E3A5F; border-color: #60A5FA; color: #60A5FA; }
+[data-theme="dark"] .toggle-slider { background: #334155; }
+[data-theme="dark"] .pw-modal-overlay { background: rgba(0,0,0,.65); }
+[data-theme="dark"] .pw-modal-box { background: #1E2433; border: 1px solid #334155; }
+[data-theme="dark"] .pw-modal-box h2 { color: #F1F5F9; }
+[data-theme="dark"] .pw-field label { color: #94A3B8; }
+[data-theme="dark"] .pw-field input { background: #2A3045; border-color: #334155; color: #F1F5F9; }
+[data-theme="dark"] .pw-field input::placeholder { color: #64748B; }
+[data-theme="dark"] .pw-field input:focus { border-color: #60A5FA; }
+[data-theme="dark"] .pw-modal-close { color: #94A3B8; }
+[data-theme="dark"] .pw-modal-close:hover { background: #2A3045; }
+[data-theme="dark"] .settings-user-card { background: linear-gradient(135deg, #1E3A5F, #1E2433); border: 1px solid #334155; }
 </style>
+
+<div style="padding: 24px; max-width: 720px; margin: 0 auto;">
+    <a href="{{ route('home') }}" class="back-button" title="Kembali ke beranda">
+        <span>←</span>
+        <span>Kembali</span>
+    </a>
+</div>
 
 <div class="settings-wrap">
     <div class="settings-page-title">{{ __('settings.title') }}</div>
@@ -272,6 +335,7 @@
         <div class="settings-user-av">
             @if($user->avatar)
                 <img src="{{ asset('storage/profile/' . $user->avatar) }}"
+                     alt="{{ $user->name }}"
                      onerror="this.style.display='none';this.parentElement.textContent='{{ strtoupper(substr($user->name,0,1)) }}'">
             @else
                 {{ strtoupper(substr($user->name, 0, 1)) }}
@@ -282,7 +346,7 @@
             <div class="su-email">{{ $user->email }}</div>
             <span class="su-level">{{ $user->level ?? __('profile.reader_level') . ' 1' }}</span>
         </div>
-        <a href="{{ route('profile') }}" class="settings-profile-btn">{{ __('common.edit') }}</a>
+        <a href="{{ route('profile.edit') }}" class="settings-profile-btn">{{ __('common.edit') }}</a>
     </div>
 
     {{-- PREFERENSI —— LANGUAGE --}}

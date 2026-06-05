@@ -8,6 +8,7 @@ return [
     'borrow' => 'Pinjam',
     'lent' => 'Bagikan',
     'messages' => 'Pesan',
+    'friends' => 'Teman',
     'settings' => 'Pengaturan',
     'profile' => 'Profil',
     'logout' => 'Keluar',

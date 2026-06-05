@@ -7,6 +7,7 @@ use App\Http\Controllers\MessagesController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\FriendController;
 use App\Models\Book;
 
 // --- 1. HOME ---
@@ -41,6 +42,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/borrow-requests/{borrowRequest}/reject',  [BorrowRequestController::class, 'reject'])->name('borrow.reject');
     Route::patch('/borrow-requests/{borrowRequest}/returned',[BorrowRequestController::class, 'markReturned'])->name('borrow.returned');
     Route::delete('/borrow-requests/{borrowRequest}',        [BorrowRequestController::class, 'destroy'])->name('borrow.request.destroy');
+    Route::patch('/borrow-requests/{borrowRequest}/dismiss', [BorrowRequestController::class, 'dismiss'])->name('borrow.dismiss');
+    Route::patch('/borrow-requests/{borrowRequest}/status', [BorrowRequestController::class, 'updateStatus'])->name('borrow.updateStatus');
 
     // --- 4. MESSAGES (Inbox = borrow requests from others) ---
     Route::get('/messages',         [MessagesController::class, 'index'])->name('messages');
@@ -60,6 +63,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/lent',           [BookCatalogController::class, 'index'])->name('lent');
     Route::post('/lent',          [BookCatalogController::class, 'store'])->name('lent.store');
     Route::put('/lent/{book}',    [BookCatalogController::class, 'update'])->name('lent.update');
+    Route::patch('/lent/{book}/status', [BookCatalogController::class, 'updateStatus'])->name('lent.updateStatus');
     Route::delete('/lent/{book}', [BookCatalogController::class, 'destroy'])->name('lent.destroy');
 
     // --- 7. PROFILE ---
@@ -75,6 +79,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/settings/notifications',   [SettingsController::class, 'saveNotifications'])->name('settings.notifications');
     Route::post('/settings/privacy',         [SettingsController::class, 'savePrivacy'])->name('settings.privacy');
     Route::post('/settings/password',        [SettingsController::class, 'changePassword'])->name('settings.password');
+
+    // --- 9. FRIENDS ---
+    Route::get('/friends',                   [FriendController::class, 'index'])->name('friends');
+    Route::post('/friends',                  [FriendController::class, 'store'])->name('friends.store');
+    Route::get('/friends/search',            [FriendController::class, 'search'])->name('friends.search');
+    Route::patch('/friends/{friend}/accept', [FriendController::class, 'accept'])->name('friends.accept');
+    Route::delete('/friends/{friend}/reject',[FriendController::class, 'reject'])->name('friends.reject');
+    Route::delete('/friends/{friend}',       [FriendController::class, 'destroy'])->name('friends.destroy');
 });
 
 // --- 8. SEARCH ---
