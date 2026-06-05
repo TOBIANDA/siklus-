@@ -30,14 +30,16 @@
           <img src="{{ asset('images/' . ($item['lender_avatar'] ?? 'avatar_user.png')) }}" alt="{{ $item['lender_name'] }}"
                onerror="this.style.display='none'">
         </div>
-        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ $item['lender_name'] }}</span>
+        <span>{{ $item['lender_name'] }}</span>
       </div>
       @if(!empty($showReview))
       <button type="button" class="bc-review-btn">{{ __('borrow.review') }}</button>
       @else
       <a href="{{ route('messages.show', $item['lender_id']) }}" class="bc-message-btn">{{ __('borrow.message') }}</a>
       @endif
-      <a href="{{ route('messages.show', $item['lender_id']) }}" class="lender-msg-btn" title="{{ __('borrow.message') }}">✈</a>
+      <a href="{{ route('messages.show', $item['lender_id']) }}" class="lender-msg-btn" title="{{ __('borrow.message') }}">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </a>
     </div>
   </div>
   {{-- Status badge (read-only for borrower) --}}

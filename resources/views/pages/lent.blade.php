@@ -225,11 +225,13 @@
                 <div class="lender-av"></div>
                 <span>{{ $item['borrower_name'] ?? 'Borrower' }}</span>
               </div>
-              <a href="{{ route('messages') }}" class="lender-msg-btn" title="Pesan">✈</a>
+              <a href="{{ route('messages') }}" class="lender-msg-btn" title="Pesan">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </a>
             </div>
           </div>
           {{-- STATUS PICKER (lender dapat ubah manual) --}}
-          <div class="status-picker-wrap" style="position:relative;flex-shrink:0;align-self:center;">
+          <div class="status-picker-wrap">
             <button type="button"
                     class="status-b s-onread status-picker-trigger"
                     data-book-id="{{ $item['book_id'] ?? $item['id'] }}"
@@ -242,7 +244,6 @@
             </button>
             <div class="status-picker-menu" role="listbox" hidden>
               <button type="button" class="status-opt s-onread" data-status="on_loan" role="option">{{ __('lent.on_loan') }}</button>
-              <button type="button" class="status-opt s-finish" data-status="returned" role="option">Dikembalikan</button>
               <button type="button" class="status-opt s-available" data-status="available" role="option">Tersedia</button>
             </div>
           </div>
@@ -283,10 +284,10 @@
     @php $finishedCount = count(array_filter($items, fn($item) => $item['book_status'] !== 'on_loan' && $item['pending_count'] === 0)); @endphp
     @if($finishedCount > 0)
     <div class="bsection-title">{{ __('lent.finished_loaned') }}</div>
-    <div class="borrow-cards">
+    <div class="borrow-cards" id="lent-section-finished">
       @foreach($items as $item)
         @if($item['book_status'] !== 'on_loan' && $item['pending_count'] === 0)
-        <div class="borrow-card">
+        <div class="borrow-card" data-item-id="{{ $item['id'] ?? '' }}" data-book-id="{{ $item['book_id'] ?? '' }}">
           <div class="bc-cover">
             <img src="{{ asset('images/' . $item['cover']) }}" alt="{{ $item['title'] }}"
                  onerror="this.outerHTML='📚'">
@@ -299,7 +300,22 @@
               <span style="color:var(--gray);font-size:11px;">{{ __('lent.ready_to_share') }}</span>
             </div>
           </div>
-          <span class="status-b s-finish">{{ __('lent.available') }}</span>
+          <div class="status-picker-wrap">
+            <button type="button"
+                    class="status-b s-available status-picker-trigger"
+                    data-book-id="{{ $item['book_id'] ?? $item['id'] }}"
+                    data-request-id="{{ $item['request_id'] ?? '' }}"
+                    aria-haspopup="listbox"
+                    aria-expanded="false"
+                    title="Ubah status">
+              <span class="status-picker-label">{{ __('lent.available') }}</span>
+              <span class="status-picker-chevron" aria-hidden="true">▾</span>
+            </button>
+            <div class="status-picker-menu" role="listbox" hidden>
+              <button type="button" class="status-opt s-onread" data-status="on_loan" role="option">{{ __('lent.on_loan') }}</button>
+              <button type="button" class="status-opt s-available" data-status="available" role="option">Tersedia</button>
+            </div>
+          </div>
         </div>
         @endif
       @endforeach
@@ -339,12 +355,8 @@
                         @endif
                     </div>
                     <div style="margin-bottom:10px;">
-                        <label style="font-size:11px;font-weight:700;color:var(--gray);margin-bottom:4px;display:block;text-transform:uppercase;letter-spacing:.06em;">Status</label>
-                        <select class="status-selector" data-book-id="{{ $book->id }}" style="width:100%;padding:8px 10px;border:1.5px solid var(--gray-border);background:var(--gray-light);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--dark);outline:none;cursor:pointer;transition:border-color .15s;">
-                            <option value="available" {{ $book->book_status === 'available' ? 'selected' : '' }}>Tersedia</option>
-                            <option value="on_loan" {{ $book->book_status === 'on_loan' ? 'selected' : '' }}>Sedang Dipinjam</option>
-                            <option value="returned" {{ $book->book_status === 'returned' ? 'selected' : '' }}>Sudah Dikembalikan</option>
-                        </select>
+                        <div style="font-size:11px;font-weight:700;color:var(--gray);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;">Status</div>
+                        <span class="book-status-badge {{ $book->book_status_class }}">{{ $book->book_status_label }}</span>
                     </div>
                     <div class="catalog-actions">
                         <a href="#modal-edit-{{ $book->id }}" class="edit-btn">Edit</a>
@@ -645,39 +657,6 @@
         }
     });
 
-    // ===== Status Selector Handler =====
-    const statusSelectors = document.querySelectorAll('.status-selector');
-    statusSelectors.forEach(selector => {
-        selector.addEventListener('change', async function() {
-            const bookId = this.dataset.bookId;
-            const newStatus = this.value;
-            
-            try {
-                const response = await fetch(`/lent/${bookId}/status`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken,
-                    },
-                    body: JSON.stringify({ book_status: newStatus })
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    // Optionally show a success message
-                    console.log('Status updated:', data.book_status);
-                } else {
-                    console.error('Failed to update status');
-                    // Revert the selection
-                    location.reload();
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                location.reload();
-            }
-        });
-    });
-
     function escHtml(str) {
         return String(str ?? '')
             .replace(/&/g, '&amp;').replace(/</g, '&lt;')
@@ -693,11 +672,6 @@
 (function () {
     'use strict';
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-
-    // CSS untuk status available
-    const style = document.createElement('style');
-    style.textContent = '.s-available { background: #D1FAE5; color: #065F46; }';
-    document.head.appendChild(style);
 
     function closeAllPickers(except) {
         document.querySelectorAll('.status-picker-wrap.open').forEach(wrap => {
@@ -744,8 +718,7 @@
     });
 
     const statusMap = {
-        on_loan:   { cls: 's-onread',   label: 'Sedang Dipinjam' },
-        returned:  { cls: 's-finish',   label: 'Dikembalikan' },
+        on_loan:   { cls: 's-onread',    label: 'Sedang Dipinjam' },
         available: { cls: 's-available', label: 'Tersedia' },
     };
 
@@ -776,13 +749,26 @@
             trigger.className = `status-b ${mapped.cls} status-picker-trigger`;
             trigger.querySelector('.status-picker-label').textContent = mapped.label;
 
-            // Jika dikembalikan atau tersedia, pindahkan card ke section finished
-            if (newStatus === 'returned' || newStatus === 'available') {
-                const finishedSection = document.querySelector('.borrow-cards:last-of-type');
-                if (finishedSection && card.parentElement !== finishedSection) {
-                    card.parentElement.removeChild(card);
+            if (newStatus === 'available') {
+                const finishedSection = document.getElementById('lent-section-finished');
+                if (!finishedSection) {
+                    location.reload();
+                    return;
+                }
+                if (card.parentElement !== finishedSection) {
                     finishedSection.prepend(card);
                 }
+            } else if (newStatus === 'on_loan') {
+                const onLoanSection = document.getElementById('lent-section-onloan');
+                if (!onLoanSection) {
+                    location.reload();
+                    return;
+                }
+                if (card.parentElement !== onLoanSection) {
+                    onLoanSection.prepend(card);
+                }
+                location.reload();
+                return;
             }
 
             if (window.showToast) showToast('Status buku diperbarui.');
