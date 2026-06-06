@@ -22,7 +22,11 @@ class ChatManager {
    * Initialize WebSocket connection
    */
   connect(userId) {
-    const wsUrl = import.meta.env.VITE_WEBSOCKET_URL || 'http://localhost:3000';
+    // Use window.location.hostname dynamically so it works when accessed via IP from other devices
+    let wsUrl = import.meta.env.VITE_WEBSOCKET_URL;
+    if (!wsUrl || wsUrl.includes('localhost')) {
+      wsUrl = window.location.protocol + '//' + window.location.hostname + ':3000';
+    }
     
     this.socket = io(wsUrl, {
       reconnection: true,

@@ -14,7 +14,7 @@ app.use(express.json());
 
 const io = new Server(server, {
   cors: {
-    origin: process.env.VITE_APP_URL || 'http://localhost:5173',
+    origin: '*', // Allow connections from any IP/network for local testing
     methods: ['GET', 'POST'],
     credentials: true
   },
