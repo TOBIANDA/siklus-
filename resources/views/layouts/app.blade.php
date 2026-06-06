@@ -501,8 +501,20 @@
     const btnNotif = document.querySelectorAll('.btn-notif-toggle');
     const btnBorrow = document.querySelectorAll('.btn-borrow-toggle');
 
+    // ── Tutup sidebar saat backdrop (::before) diklik di mobile ──
+    appContainer.addEventListener('click', function(e) {
+      if (window.innerWidth <= 768 && appContainer.classList.contains('sidebar-expanded')) {
+        const sidebar = document.getElementById('mainSidebar');
+        if (sidebar && !sidebar.contains(e.target) && e.target !== btnSidebar) {
+          appContainer.classList.remove('sidebar-expanded');
+          appContainer.classList.remove('submenu-expanded');
+        }
+      }
+    });
+
     if (btnSidebar) {
-      btnSidebar.addEventListener('click', function() {
+      btnSidebar.addEventListener('click', function(e) {
+        e.stopPropagation();
         appContainer.classList.toggle('sidebar-expanded');
       });
     }
@@ -522,22 +534,21 @@
       btnNotif.forEach(btn => {
         btn.addEventListener('click', function() {
           appContainer.classList.toggle('notif-expanded');
+          // tutup sidebar jika notif dibuka di mobile
+          if (window.innerWidth <= 768) {
+            appContainer.classList.remove('sidebar-expanded');
+          }
         });
       });
     }
 
+    // Klik link buku: jangan auto-expand sidebar di mobile
     document.querySelectorAll('a[href*="/books/"]').forEach(link => {
       link.addEventListener('click', function(e) {
-        const isBookLink = this.classList.contains('book-link') || 
-                          this.closest('.book-card') ||
-                          this.closest('.book-grid');
-        if (isBookLink) {
-          if (!appContainer.classList.contains('sidebar-expanded')) {
-            appContainer.classList.add('sidebar-expanded');
-            if (window.innerWidth < 768) {
-              setTimeout(() => { appContainer.classList.remove('sidebar-expanded'); }, 2000);
-            }
-          }
+        if (window.innerWidth <= 768) {
+          // tutup sidebar saat navigasi di mobile
+          appContainer.classList.remove('sidebar-expanded');
+          appContainer.classList.remove('submenu-expanded');
         }
       });
     });
