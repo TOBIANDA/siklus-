@@ -4,6 +4,12 @@
 <meta name="user-id" content="{{ auth()->id() }}">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <style>
+/* Reset layout padding for this page to allow full height */
+.page {
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
 /* ===== MESSAGES LAYOUT ===== */
 .inbox-wrap {
     display: flex;
@@ -313,7 +319,7 @@
 [data-theme="dark"] .inbox-empty small { color: #64748B; }
 </style>
 
-<div class="inbox-wrap">
+<div class="inbox-wrap {{ isset($activeRequest) && $activeRequest ? 'has-active' : '' }}">
 
     {{-- ============ SIDEBAR ============ --}}
     <div class="inbox-sidebar">
@@ -389,6 +395,8 @@
 
         {{-- Header --}}
         <div class="inbox-detail-header">
+            {{-- Tombol Back (mobile only) --}}
+            <a href="{{ route('messages') }}" class="inbox-detail-back" style="display:none;" title="Kembali">←</a>
             <div style="display:flex;align-items:center;gap:12px;">
                 <div class="inbox-avatar" style="width:40px;height:40px;font-size:14px;">{{ $initials }}</div>
                 <div>

@@ -211,6 +211,183 @@
   .notif-v2-title  { font-size: 12px; }
   .notif-v2-author { font-size: 10px; }
 
+  /* ══ CHAT / MESSAGES PAGE ══ */
+  /* Inbox wrap: stack vertikal — sidebar dulu, lalu detail */
+  .inbox-wrap {
+    flex-direction: column !important;
+    height: auto !important;
+    min-height: calc(100vh - 60px);
+  }
+
+  /* Sidebar pesan: lebar penuh, tinggi fixed agar scrollable */
+  .inbox-sidebar {
+    width: 100% !important;
+    flex-shrink: 0;
+    border-right: none !important;
+    border-bottom: 1px solid var(--gray-border);
+    max-height: 260px;
+  }
+
+  /* Saat ada chat aktif: sembunyikan list, tampilkan detail saja */
+  .inbox-wrap.has-active .inbox-sidebar {
+    display: none;
+  }
+
+  .inbox-wrap.has-active {
+    height: calc(100vh - 60px) !important;
+    min-height: calc(100vh - 60px);
+  }
+
+  .inbox-wrap.has-active .inbox-detail {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Tambah tombol back di header chat */
+  .inbox-detail-back {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--gray-light);
+    font-size: 16px;
+    cursor: pointer;
+    text-decoration: none;
+    color: var(--dark);
+    flex-shrink: 0;
+    margin-right: 8px;
+  }
+
+  .inbox-detail {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .inbox-detail-body {
+    padding: 12px;
+  }
+
+  .inbox-detail-header {
+    padding: 12px 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .req-card {
+    padding: 14px;
+  }
+
+  .req-info-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .req-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .btn-approve, .btn-reject, .btn-returned {
+    width: 100%;
+  }
+
+  /* Chat bubble max-width lebih lebar di mobile */
+  .chat-bubble-wrapper {
+    max-width: 85% !important;
+  }
+
+  .inbox-input-area {
+    padding: 10px 12px;
+  }
+
+  /* ══ BORROW/LENT PAGE ══ */
+  /* Stats grid: 2 kolom di mobile */
+  .borrow-stats {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    padding: 0 !important;
+    margin-bottom: 20px !important;
+  }
+
+  .borrow-stat {
+    padding: 12px 10px !important;
+  }
+
+  .borrow-stat-value {
+    font-size: 22px !important;
+  }
+
+  .borrow-stat-icon {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  /* Borrow cards: horizontal scroll tetap ada */
+  .borrow-cards {
+    gap: 10px;
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+  }
+
+  .borrow-card {
+    min-width: 220px;
+    max-width: 220px;
+    padding: 10px;
+    padding-top: 36px;
+  }
+
+  .bc-cover {
+    width: 48px;
+    height: 64px;
+  }
+
+  .bc-title { font-size: 12px; }
+  .bc-author { font-size: 10px; }
+  .date-row { font-size: 10px; }
+
+  .bsection-title {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+
+  /* Borrow tabs */
+  .borrow-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+    width: 100%;
+  }
+  .borrow-tabs::-webkit-scrollbar { display: none; }
+  .borrow-tab {
+    padding: 6px 14px;
+    font-size: 13px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* ══ BOOK DETAIL PAGE ══ */
+  .book-layout {
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+
+  .book-side {
+    width: 100% !important;
+  }
+
+  .reviews-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
   /* ══ SETTINGS PAGE ══ */
   /* Row label + kontrol stack vertical */
   .settings-row {

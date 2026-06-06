@@ -50,12 +50,9 @@ class MessagesController extends Controller
             return $this->getThreadKey($req, $userId);
         })->values();
 
-        $activeRequest = $requests->first();
-
-        // If I'm the owner, mark latest incoming message as read
-        if ($activeRequest && $activeRequest->book->user_id === $userId && !$activeRequest->read_by_owner) {
-            $activeRequest->update(['read_by_owner' => true]);
-        }
+        // Di halaman index: TIDAK auto-pilih percakapan pertama.
+        // User harus klik dulu dari daftar (penting untuk UX mobile).
+        $activeRequest = null;
 
         return view('pages.messages', compact('requests', 'activeRequest'));
     }
